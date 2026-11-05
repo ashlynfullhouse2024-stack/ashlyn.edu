@@ -30,7 +30,7 @@ import { Footer } from './components/Footer';
 export default function App() {
   // Products state with localStorage persistence
   const [products, setProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem('ashlyn_edu_products_v3');
+    const saved = localStorage.getItem('ashlyn_edu_products_v4_images');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -75,7 +75,7 @@ export default function App() {
 
   // Store Settings (WhatsApp number, bank accounts, template)
   const [storeSettings, setStoreSettings] = useState<StoreSettings>(() => {
-    const saved = localStorage.getItem('ashlyn_edu_store_settings');
+    const saved = localStorage.getItem('ashlyn_edu_store_settings_v3');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -98,7 +98,7 @@ export default function App() {
 
   // Sync products to localStorage
   useEffect(() => {
-    localStorage.setItem('ashlyn_edu_products_v3', JSON.stringify(products));
+    localStorage.setItem('ashlyn_edu_products_v4_images', JSON.stringify(products));
   }, [products]);
 
   // Sync cart to localStorage
@@ -174,11 +174,11 @@ export default function App() {
     showToast('Keranjang telah dikosongkan.');
   };
 
-  // Admin toggling & PIN
+  // Admin toggling & Password
   const handleToggleAdmin = () => {
     if (isAdmin) {
       setIsAdmin(false);
-      showToast('Keluar dari Mode Guru.');
+      showToast('Keluar dari Mode Admin.');
     } else {
       setIsAdminLoginOpen(true);
     }
@@ -187,7 +187,7 @@ export default function App() {
   const handleAdminLoginSuccess = () => {
     setIsAdmin(true);
     setIsAdminLoginOpen(false);
-    showToast('Mode Guru aktif!');
+    showToast('🌸 Mode Admin aktif! Password terverifikasi.');
   };
 
   // Product CRUD
@@ -216,14 +216,14 @@ export default function App() {
       setProducts((prev) =>
         prev.map((p) => (p.id === editId ? { ...productData, id: editId } : p))
       );
-      showToast('Perubahan produk disimpan.');
+      showToast('🌸 Perubahan produk disimpan!');
     } else {
       const newProduct: Product = {
         ...productData,
         id: Date.now()
       };
       setProducts((prev) => [newProduct, ...prev]);
-      showToast('Produk baru ditambahkan.');
+      showToast('🌸 Produk baru & foto berhasil ditambahkan!');
     }
     setIsAdminProductOpen(false);
     setProductToEdit(null);
@@ -232,7 +232,7 @@ export default function App() {
   const handleResetCatalog = () => {
     if (window.confirm('Kembalikan semua produk ke katalog awal?')) {
       setProducts(INITIAL_PRODUCTS);
-      localStorage.setItem('ashlyn_edu_products_v3', JSON.stringify(INITIAL_PRODUCTS));
+      localStorage.setItem('ashlyn_edu_products_v4_images', JSON.stringify(INITIAL_PRODUCTS));
       showToast('Katalog di-reset ke awal.');
     }
   };
@@ -295,50 +295,67 @@ export default function App() {
     <div className="bg-[#F8EBD8] min-h-screen flex flex-col antialiased text-[#3b3533]">
       {/* Toast Notification Lilnami style */}
       {toastMessage && (
-        <div className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#3b3533] text-white text-xs font-bold px-4 py-2 rounded-2xl shadow-lg flex items-center gap-2 border border-white/20">
+        <div className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#3b3533] text-white text-xs font-bold px-4 py-2 rounded-2xl shadow-lg flex items-center gap-2 border border-white/20 animate-fade-in">
           <Check className="w-3.5 h-3.5 text-[#EFC653]" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Admin Mode Bar */}
+      {/* Admin Mode Bar (Khusus Mode Admin) */}
       {isAdmin && (
-        <div className="bg-[#3b3533] text-white py-2 px-4 border-b-2 border-[#8FA477] sticky top-0 z-45 text-xs">
-          <div className="max-w-5xl mx-auto flex items-center justify-between gap-2">
-            <span className="flex items-center gap-1.5 font-brand text-[#EFC653]">
-              <ShieldCheck className="w-4 h-4 text-[#8FA477]" />
-              <span>Dashboard Pengelola Guru Aktif</span>
-            </span>
+        <div className="bg-[#2e2927] text-white py-2.5 px-3 sm:px-4 border-b-2 border-[#8FA477] sticky top-0 z-45 text-xs shadow-md">
+          <div className="max-w-5xl mx-auto flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse" />
+              <span className="flex items-center gap-1.5 font-brand text-[#EFC653] font-bold">
+                <ShieldCheck className="w-4 h-4 text-[#8FA477]" />
+                <span>Dashboard Mode Admin</span>
+              </span>
+              <span className="hidden md:inline-block text-[10px] bg-white/10 px-2 py-0.5 rounded-full text-stone-300">
+                Password: 080406
+              </span>
+            </div>
 
             <div className="flex items-center space-x-1.5 sm:space-x-2">
+              {/* WhatsApp Feature Button inside Admin Mode */}
               <button
+                type="button"
                 onClick={() => setIsWaSimulatorOpen(true)}
-                className="cursor-pointer bg-[#8FA477] hover:bg-[#7b9165] text-white px-2.5 py-1 rounded-xl font-bold flex items-center gap-1 text-[11px]"
-                title="Atur nomor WhatsApp & rekening bank"
+                className="cursor-pointer bg-[#25D366] hover:bg-[#20ba59] text-white px-2.5 sm:px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 text-[11px] shadow-xs active:scale-95 transition"
+                title="Buka Fitur Pesan WhatsApp & Pengaturan Rekening"
               >
-                <Settings className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Pengaturan WA & Bank</span>
-                <span className="sm:hidden">WA & Bank</span>
+                <MessageSquare className="w-3.5 h-3.5 fill-white text-[#25D366]" />
+                <span>Fitur Pesan WA</span>
               </button>
+
+              {/* Add Product with Direct Image Upload */}
               <button
+                type="button"
                 onClick={handleOpenAddProduct}
-                className="cursor-pointer bg-[#D9574F] hover:bg-[#c34c44] text-white px-2.5 sm:px-3 py-1 rounded-xl font-bold flex items-center gap-1 text-[11px]"
+                className="cursor-pointer bg-[#D9574F] hover:bg-[#c34c44] text-white px-2.5 sm:px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 text-[11px] shadow-xs active:scale-95 transition"
+                title="Tambah produk baru & upload foto langsung"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>+ Produk</span>
               </button>
+
               <button
+                type="button"
                 onClick={handleResetCatalog}
-                className="cursor-pointer bg-white/10 hover:bg-white/20 text-stone-200 px-2 py-1 rounded-xl text-[11px]"
+                className="cursor-pointer bg-white/10 hover:bg-white/20 text-stone-300 hover:text-white px-2 py-1.5 rounded-xl text-[11px] transition"
+                title="Kembalikan katalog produk bawaan"
               >
                 Reset
               </button>
+
               <button
+                type="button"
                 onClick={() => setIsAdmin(false)}
-                className="cursor-pointer text-stone-400 hover:text-white px-1.5 py-1"
-                title="Tutup Mode Guru"
+                className="cursor-pointer bg-stone-700 hover:bg-stone-600 text-stone-200 hover:text-white px-2 sm:px-2.5 py-1.5 rounded-xl text-[11px] flex items-center gap-1 transition"
+                title="Keluar dari Mode Admin"
               >
                 <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Keluar</span>
               </button>
             </div>
           </div>
@@ -358,20 +375,62 @@ export default function App() {
           setSelectedCategory(cat);
           setSearchQuery('');
         }}
-        onOpenWaSimulator={() => setIsWaSimulatorOpen(true)}
-        whatsappNumber={storeSettings.whatsappNumber}
-        shopeeUrl={storeSettings.shopeeUrl}
       />
 
       {/* Main Container */}
       <main className="flex-grow max-w-5xl w-full mx-auto p-3 sm:p-4 md:p-6 pb-24">
+        {/* Admin Quick Action Card (Tampil saat Admin Aktif) */}
+        {isAdmin && (
+          <div className="mb-4 bg-white rounded-3xl border-2 border-[#8FA477]/50 p-4 shadow-sm space-y-3 retro-box">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-[#8FA477]/20 text-[#4d5e3c] flex items-center justify-center font-bold">
+                  ⚡
+                </div>
+                <div>
+                  <h3 className="font-brand text-xs sm:text-sm font-bold text-[#D9574F]">
+                    Mode Admin Aktif • Kontrol Penuh Toko
+                  </h3>
+                  <p className="text-[11px] text-stone-500">
+                    Fitur pesan WhatsApp dan formulir upload gambar produk langsung siap digunakan.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsWaSimulatorOpen(true)}
+                  className="cursor-pointer bg-[#25D366] hover:bg-[#20ba59] text-white px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-xs transition"
+                >
+                  <MessageSquare className="w-3.5 h-3.5 fill-white" />
+                  <span>Buka Fitur Pesan WA</span>
+                </button>
+                <button
+                  onClick={handleOpenAddProduct}
+                  className="cursor-pointer bg-[#D9574F] hover:bg-[#c34c44] text-white px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-xs transition"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Upload Produk Baru</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Hint Box Upload Gambar */}
+            <div className="bg-[#F8EBD8]/50 border border-[#E9899F]/30 rounded-2xl p-2.5 text-[11px] text-stone-600 flex items-start gap-2">
+              <span className="text-base leading-none">📷</span>
+              <div>
+                <strong className="text-stone-800">Cara Upload Gambar Langsung:</strong> Klik tombol <em>"+ Upload Produk Baru"</em> atau tombol edit (ikon pensil kuning) pada kartu produk, lalu klik tombol <em>"Pilih File Foto dari HP / Laptop"</em>. Foto Anda otomatis diproses dan langsung tampil di katalog!
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Hero Banner */}
         <HeroBanner
           onExploreCatalog={() => {
             const el = document.getElementById('katalog');
             el?.scrollIntoView({ behavior: 'smooth' });
           }}
-          onOpenWaSimulator={() => setIsWaSimulatorOpen(true)}
         />
 
         {/* Bundling Packages Showcase */}
@@ -462,6 +521,8 @@ export default function App() {
         onClose={() => setDetailProduct(null)}
         onAddToCart={(p, qty) => handleAddToCart(p, qty)}
         onBuyNow={handleBuyNow}
+        isAdmin={isAdmin}
+        onEditProduct={handleEditProduct}
       />
 
       {/* 2. Cart Drawer */}
@@ -530,7 +591,7 @@ export default function App() {
         settings={storeSettings}
         onSaveSettings={(newSettings) => {
           setStoreSettings(newSettings);
-          localStorage.setItem('ashlyn_edu_store_settings', JSON.stringify(newSettings));
+          localStorage.setItem('ashlyn_edu_store_settings_v3', JSON.stringify(newSettings));
           showToast('🌸 Pengaturan WhatsApp & Bank berhasil disimpan!');
         }}
       />

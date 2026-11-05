@@ -1,14 +1,11 @@
+import React from 'react';
 import { 
   ShoppingBag, 
   Search, 
   ShieldCheck, 
-  GraduationCap, 
-  X,
-  PhoneCall,
-  Sparkles,
-  MessageSquare
+  Lock, 
+  X
 } from 'lucide-react';
-import { cleanWaPhone } from '../data/initialProducts';
 
 interface NavbarProps {
   searchQuery: string;
@@ -19,9 +16,6 @@ interface NavbarProps {
   isAdmin: boolean;
   onToggleAdmin: () => void;
   onSelectCategory: (cat: any) => void;
-  onOpenWaSimulator: () => void;
-  whatsappNumber?: string;
-  shopeeUrl?: string;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -31,12 +25,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenCart,
   isAdmin,
   onToggleAdmin,
-  onSelectCategory,
-  onOpenWaSimulator,
-  whatsappNumber = '081234567890',
-  shopeeUrl
+  onSelectCategory
 }) => {
-  const targetPhone = cleanWaPhone(whatsappNumber);
   return (
     <>
       {/* 1. Header Pengumuman Manis (Lilnami Style) */}
@@ -82,7 +72,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {searchQuery && (
               <button 
                 onClick={() => onSearchChange('')}
-                className="absolute right-2.5 text-stone-400 hover:text-stone-700"
+                className="absolute right-2.5 text-stone-400 hover:text-stone-700 cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -91,50 +81,27 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Action Buttons */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* WhatsApp Simulator & Preview Button */}
-            <button
-              type="button"
-              onClick={onOpenWaSimulator}
-              className="cursor-pointer flex items-center gap-1 px-2 sm:px-2.5 py-2 rounded-xl text-xs font-bold text-[#25D366] bg-white border-2 border-[#25D366] hover:bg-[#25D366]/10 transition retro-box-green"
-              title="Lihat Format Pesan WhatsApp"
-            >
-              <MessageSquare className="w-3.5 h-3.5 fill-[#25D366] text-[#25D366]" />
-              <span className="text-[11px] sm:text-xs">Pesan WA</span>
-            </button>
-
-            {/* Shopee Button if provided */}
-            {shopeeUrl && (
-              <a
-                href={shopeeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden xl:flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-bold text-[#EE4D2D] bg-white border-2 border-[#EE4D2D]/60 hover:bg-[#EE4D2D]/10 transition"
-                title="Beli dari Shopee"
-              >
-                <span>Shopee</span>
-              </a>
-            )}
-
-            {/* Mode Guru Button */}
+            {/* Mode Admin Button */}
             <button
               type="button"
               onClick={onToggleAdmin}
               className={`cursor-pointer text-xs font-bold px-2.5 sm:px-3 py-2 rounded-xl border-2 transition flex items-center gap-1.5 active:scale-95 ${
                 isAdmin 
                   ? 'bg-[#8FA477] text-white border-[#8FA477]' 
-                  : 'bg-white text-[#4d5e3c] border-[#8FA477] hover:bg-[#8FA477]/10 retro-box-green'
+                  : 'bg-white text-stone-700 border-stone-300 hover:border-[#8FA477] hover:text-[#4d5e3c] retro-box'
               }`}
+              title={isAdmin ? "Keluar dari Mode Admin" : "Masuk ke Mode Admin (Password: 080406)"}
             >
               {isAdmin ? (
                 <>
                   <ShieldCheck className="w-3.5 h-3.5 text-white" />
-                  <span className="text-[11px] sm:text-xs">Guru (Aktif)</span>
+                  <span className="text-[11px] sm:text-xs">Admin (Aktif)</span>
                 </>
               ) : (
                 <>
-                  <GraduationCap className="w-3.5 h-3.5 text-[#8FA477]" />
-                  <span className="text-[11px] sm:text-xs hidden sm:inline">Mode Guru</span>
-                  <span className="text-[11px] sm:hidden">Guru</span>
+                  <Lock className="w-3.5 h-3.5 text-[#8FA477]" />
+                  <span className="text-[11px] sm:text-xs hidden sm:inline">Mode Admin</span>
+                  <span className="text-[11px] sm:hidden">Admin</span>
                 </>
               )}
             </button>

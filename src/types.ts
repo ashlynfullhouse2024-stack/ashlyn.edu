@@ -79,7 +79,6 @@ export interface StoreSettings {
   whatsappNumber: string;
   storeName: string;
   instagramHandle: string;
-  shopeeUrl: string;
   bankAccounts: BankAccount[];
   greetingTemplate: string;
   footerTemplate: string;

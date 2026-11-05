@@ -7,7 +7,8 @@ import {
   Sparkles, 
   Plus, 
   Minus,
-  Truck
+  Edit3,
+  Camera
 } from 'lucide-react';
 import { Product } from '../types';
 import { formatRupiah } from '../data/initialProducts';
@@ -17,13 +18,17 @@ interface ProductDetailModalProps {
   onClose: () => void;
   onAddToCart: (p: Product, qty: number) => void;
   onBuyNow: (p: Product, qty: number) => void;
+  isAdmin?: boolean;
+  onEditProduct?: (p: Product) => void;
 }
 
 export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   product,
   onClose,
   onAddToCart,
-  onBuyNow
+  onBuyNow,
+  isAdmin = false,
+  onEditProduct
 }) => {
   const [quantity, setQuantity] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
@@ -40,6 +45,13 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   const handleBuyNow = () => {
     onBuyNow(product, quantity);
+  };
+
+  const handleEditThisProduct = () => {
+    if (onEditProduct) {
+      onClose();
+      onEditProduct(product);
+    }
   };
 
   return (
@@ -72,17 +84,30 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             </div>
           </div>
 
-          <button 
-            type="button" 
-            onClick={onClose} 
-            className="cursor-pointer text-stone-400 hover:text-stone-700 p-1 rounded-lg"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-1">
+            {isAdmin && onEditProduct && (
+              <button
+                type="button"
+                onClick={handleEditThisProduct}
+                className="cursor-pointer bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 shadow-xs transition"
+                title="Edit produk & ganti foto"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                <span className="text-[11px]">Edit Foto</span>
+              </button>
+            )}
+            <button 
+              type="button" 
+              onClick={onClose} 
+              className="cursor-pointer text-stone-400 hover:text-stone-700 p-1.5 rounded-xl"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
-        {/* Large Image Preview */}
-        <div className="w-full aspect-video rounded-2xl overflow-hidden bg-[#F8EBD8]/60 border border-[#E9899F]/20 relative">
+        {/* Large Image Preview with Admin Edit Shortcut */}
+        <div className="w-full aspect-video rounded-2xl overflow-hidden bg-[#F8EBD8]/60 border border-[#E9899F]/20 relative group">
           <img
             src={product.image}
             alt={product.name}
@@ -92,6 +117,17 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             <span>★ {product.rating}</span>
             <span className="opacity-80">({product.reviews} ulasan guru)</span>
           </div>
+
+          {isAdmin && onEditProduct && (
+            <button
+              type="button"
+              onClick={handleEditThisProduct}
+              className="absolute top-2 right-2 bg-stone-900/80 hover:bg-[#D9574F] text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md transition cursor-pointer backdrop-blur-xs"
+            >
+              <Camera className="w-3.5 h-3.5" />
+              <span>Ganti Gambar Produk Ini</span>
+            </button>
+          )}
         </div>
 
         {/* Description */}
