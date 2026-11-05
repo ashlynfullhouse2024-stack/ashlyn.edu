@@ -1,0 +1,6 @@
+{
+  "name": "Ashlyn Edu - Cute Floral Classroom Web Order",
+  "description": "Platform pemesanan modul ajar, perlengkapan kelas floral estetik, dan alat peraga edukatif Ashlyn Bloom Kids & Teacher dengan checkout WhatsApp dan mode guru.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Ashlyn Signature Palette: Soft Pink, Matcha, Latte */
+    --color-latte: #FAF5EE;
+    --color-latte-surface: #F4ECE1;
+    --color-latte-border: #E8DCCF;
+    --color-latte-text: #453934;
+
+    --color-soft-pink: #E88B9E;
+    --color-soft-pink-dark: #D47287;
+    --color-soft-pink-light: #FDEEF2;
+    --color-soft-pink-border: #F5C2CD;
+
+    --color-matcha: #8BA070;
+    --color-matcha-dark: #4D5E37;
+    --color-matcha-light: #EEF4E8;
+    --color-matcha-border: #CFDDC1;
+  }
+
+  body {
+    background-color: #FAF5EE;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #453934;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+.font-brand {
+  font-family: 'Fredoka', cursive, sans-serif;
+}
+
+.retro-box {
+  box-shadow: 3px 3px 0px rgba(232, 139, 158, 0.32);
+}
+
+.retro-box-matcha {
+  box-shadow: 3px 3px 0px rgba(139, 160, 112, 0.38);
+}
+
+.retro-box-green {
+  box-shadow: 3px 3px 0px rgba(139, 160, 112, 0.38);
+}
+
+.retro-box-latte {
+  box-shadow: 3px 3px 0px rgba(216, 196, 177, 0.5);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #FAF5EE;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #E8DCCF;
+  border-radius: 9999px;
+}
+
+@media print {
+  body {
+    background: white !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}
