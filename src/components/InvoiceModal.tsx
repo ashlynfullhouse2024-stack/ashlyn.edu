@@ -85,7 +85,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ order, onClose }) =>
                   Penyedia Modul Ajar Tematik & Perlengkapan Belajar Anak
                 </p>
                 <p className="text-[11px] text-stone-400">
-                  ashlyn.edu • WA: +62 812-3456-7890 • email: admin@ashlyn.edu
+                  ashlyn.edu • WA: +62 878-9513-1563 • email: admin@ashlyn.edu
                 </p>
               </div>
             </div>

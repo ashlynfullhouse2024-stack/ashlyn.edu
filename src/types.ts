@@ -56,6 +56,8 @@ export interface BundlePackage {
   emoji: string;
 }
 
+export type OrderStatus = 'Menunggu Konfirmasi' | 'Diproses' | 'Dikirim' | 'Selesai' | 'Dibatalkan';
+
 export interface CompletedOrder {
   orderId: string;
   date: string;
@@ -65,7 +67,7 @@ export interface CompletedOrder {
   discountAmount?: number;
   discountLabel?: string;
   totalAmount: number;
-  status: 'Menunggu Konfirmasi' | 'Diproses' | 'Dikirim';
+  status: OrderStatus;
   isQuestionOnly?: boolean;
 }
 

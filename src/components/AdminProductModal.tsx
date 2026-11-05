@@ -110,7 +110,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
         isFree: false,
         rating: 5.0,
         reviews: 1,
-        image: '/assets/aistudio/01_pkkm-bikin-stres_66af1d15.webp',
+        image: '/assets/aistudio/01_pkkm-bikin-stres.webp',
         description: '',
         badge: 'Produk Baru',
         curriculum: 'Kurikulum Merdeka',

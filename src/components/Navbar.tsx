@@ -90,7 +90,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   ? 'bg-[#8FA477] text-white border-[#8FA477]' 
                   : 'bg-white text-stone-700 border-stone-300 hover:border-[#8FA477] hover:text-[#4d5e3c] retro-box'
               }`}
-              title={isAdmin ? "Keluar dari Mode Admin" : "Masuk ke Mode Admin (Password: 080406)"}
+              title={isAdmin ? "Keluar dari Mode Admin" : "Masuk ke Mode Admin"}
             >
               {isAdmin ? (
                 <>

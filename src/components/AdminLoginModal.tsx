@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { verifyAdminPassword, getLockRemainingMs, resetAdminAttempts } from '../lib/adminAuth';
 import { X, Lock, ShieldCheck, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 interface AdminLoginModalProps {
@@ -14,18 +15,30 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
 }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === '080406') {
-      setError(false);
-      setPassword('');
-      onSuccess();
-    } else {
-      setError(true);
+    if (busy) return;
+    setBusy(true);
+    try {
+      const res = await verifyAdminPassword(password);
+      if (res.ok) {
+        setError('');
+        setPassword('');
+        onSuccess();
+      } else if (res.lockedMs > 0) {
+        setError(`Terlalu banyak percobaan. Coba lagi dalam ${Math.ceil(getLockRemainingMs() / 60000)} menit.`);
+      } else {
+        setError(`Password salah. Sisa percobaan: ${res.left}.`);
+      }
+    } catch {
+      setError('Browser tidak mendukung verifikasi aman (butuh HTTPS).');
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -74,7 +87,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
-                  setError(false);
+                  setError('');
                 }}
                 placeholder="Masukkan password admin..."
                 className="w-full bg-[#F8EBD8]/30 focus:bg-white border-2 border-[#E9899F]/30 focus:border-[#D9574F] rounded-xl pl-9 pr-10 py-2 text-sm tracking-wider text-stone-800 outline-none transition"
@@ -89,21 +102,43 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
               </button>
             </div>
             {error && (
-              <p className="text-[11px] text-red-500 font-semibold mt-1.5 flex items-center gap-1">
-                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                <span>Password salah! Gunakan: <strong>080406</strong></span>
-              </p>
+              <div className="space-y-1 mt-1.5">
+                <p className="text-[11px] text-red-500 font-semibold flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{error}</span>
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    resetAdminAttempts();
+                    setError('');
+                  }}
+                  className="cursor-pointer text-[10px] text-stone-600 hover:text-stone-900 underline block"
+                >
+                  Buka kunci / Coba lagi sekarang
+                </button>
+              </div>
             )}
-            <div className="mt-2 p-2 bg-[#F8EBD8]/60 rounded-xl border border-[#E9899F]/20 text-[11px] text-stone-600 flex items-center justify-between">
+
+            <div className="mt-2.5 p-2 bg-[#F8EBD8]/60 rounded-xl border border-[#E9899F]/20 text-[11px] text-stone-600 flex items-center justify-between">
               <span>Password Admin:</span>
-              <span className="font-mono font-bold text-[#D9574F] bg-white px-2 py-0.5 rounded-lg border border-[#E9899F]/30">
+              <button
+                type="button"
+                onClick={() => {
+                  setPassword('080406');
+                  setError('');
+                }}
+                className="cursor-pointer font-mono font-bold text-[#D9574F] bg-white px-2 py-0.5 rounded-lg border border-[#E9899F]/30 hover:bg-[#D9574F] hover:text-white transition"
+                title="Klik untuk mengisi otomatis"
+              >
                 080406
-              </span>
+              </button>
             </div>
           </div>
 
           <button
             type="submit"
+            disabled={busy}
             className="cursor-pointer w-full bg-[#D9574F] hover:bg-[#c34c44] text-white font-bold py-2.5 rounded-xl text-xs sm:text-sm active:scale-95 transition retro-box shadow-md"
           >
             Masuk ke Mode Admin 🌸

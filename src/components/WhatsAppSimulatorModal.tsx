@@ -138,7 +138,7 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
               onChange={(e) =>
                 setCurrentSettings({ ...currentSettings, whatsappNumber: e.target.value })
               }
-              placeholder="Contoh: 081234567890"
+              placeholder="Contoh: 087895131563"
               className="w-full bg-[#F8EBD8]/30 focus:bg-white border-2 border-[#E9899F]/40 focus:border-[#D9574F] rounded-xl px-3 py-2 text-stone-800 outline-none font-mono text-sm"
             />
             <div className="flex items-center justify-between text-[11px] text-stone-500 pt-0.5">

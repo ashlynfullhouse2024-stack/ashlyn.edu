@@ -1,4 +1,4 @@
-import { Product } from '../types';
+import { Product, StoreSettings } from '../types';
 
 export const INITIAL_PRODUCTS: Product[] = [
   {
@@ -467,14 +467,14 @@ export function formatRupiah(amount: number): string {
 }
 
 export const DEFAULT_STORE_SETTINGS = {
-  whatsappNumber: '081234567890',
+  whatsappNumber: '087895131563',
   storeName: 'Ashlyn Edu',
   instagramHandle: 'ashlyn.edu',
   bankAccounts: [
     { bankName: 'BCA', accountNumber: '1234567890', accountHolder: 'Ashlyn Edu' },
     { bankName: 'Mandiri', accountNumber: '1370001234567', accountHolder: 'Ashlyn Edu' },
     { bankName: 'BRI', accountNumber: '012301098765501', accountHolder: 'Ashlyn Edu' },
-    { bankName: 'DANA / E-Wallet', accountNumber: '081234567890', accountHolder: 'Ashlyn Edu' }
+    { bankName: 'DANA / E-Wallet', accountNumber: '087895131563', accountHolder: 'Ashlyn Edu' }
   ],
   greetingTemplate: 'Halo Admin Ashlyn Edu (ashlyn.edu) 🌸\nSaya ingin memesan perlengkapan kelas & modul berikut:',
   footerTemplate: 'Mohon dibantu konfirmasi pesanan dan proses pengirimannya ya kak. Terima kasih banyak! 🌸',
@@ -582,7 +582,7 @@ export function cleanWaPhone(phone: string): string {
   } else if (cleaned.startsWith('8')) {
     cleaned = '62' + cleaned;
   }
-  return cleaned || '6281234567890';
+  return cleaned || '6287895131563';
 }
 
 export function generateWaOrderText(
@@ -604,7 +604,7 @@ export function generateWaOrderText(
       questionText?: string;
     };
   },
-  settings = DEFAULT_STORE_SETTINGS
+  settings: StoreSettings = DEFAULT_STORE_SETTINGS
 ): string {
   const storeTitle = (settings.storeName || 'ASHLYN EDU').toUpperCase();
 
@@ -651,7 +651,7 @@ export function generateWaOrderText(
     text += `${order.discountLabel || 'Diskon Bundling'}: -${formatRupiah(order.discountAmount)}\n`;
     text += `TOTAL BAYAR: ${formatRupiah(order.totalAmount)}\n`;
   } else {
-    text += `TOTAL: ${formatRupiah(order.totalAmount)}\n`;
+    text += `TOTAL BAYAR: ${formatRupiah(order.totalAmount)}\n`;
   }
   text += `Metode Bayar: ${order.customer.paymentMethod}\n`;
   if (order.customer.notes) {
@@ -661,4 +661,10 @@ export function generateWaOrderText(
   text += `Halo Admin ${settings.storeName}! Saya mau konfirmasi pembayaran untuk pesanan di atas ya. Terima kasih! 🍓✨`;
 
   return text;
+}
+
+// Menyesuaikan path aset dengan base URL (mis. saat deploy di subpath GitHub Pages)
+export function fixImg(src: string): string {
+  const base = import.meta.env.BASE_URL || '/';
+  return src.startsWith('/assets/') && base !== '/' ? base + src.slice(1) : src;
 }

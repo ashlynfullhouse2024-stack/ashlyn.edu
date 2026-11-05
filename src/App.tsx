@@ -8,10 +8,14 @@ import {
   ArrowRight,
   Check,
   Settings,
-  MessageSquare
+  MessageSquare,
+  ClipboardList
 } from 'lucide-react';
-import { Product, CartItem, ProductCategory, OrderCustomerInfo, CompletedOrder, StoreSettings } from './types';
-import { INITIAL_PRODUCTS, CATEGORIES, formatRupiah, DEFAULT_STORE_SETTINGS, calculateBundlingDiscount } from './data/initialProducts';
+import { Product, CartItem, ProductCategory, OrderCustomerInfo, CompletedOrder, StoreSettings, OrderStatus } from './types';
+import { hasAdminSession, clearAdminSession } from './lib/adminAuth';
+import { sendOrderToGoogleSheets } from './lib/googleSheets';
+import { OrdersModal } from './components/OrdersModal';
+import { INITIAL_PRODUCTS, CATEGORIES, formatRupiah, DEFAULT_STORE_SETTINGS, calculateBundlingDiscount, cleanWaPhone, generateWaOrderText, fixImg } from './data/initialProducts';
 import { Navbar } from './components/Navbar';
 import { HeroBanner } from './components/HeroBanner';
 import { BundlingShowcase } from './components/BundlingShowcase';
@@ -33,12 +37,12 @@ export default function App() {
     const saved = localStorage.getItem('ashlyn_edu_products_v4_images');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        return (JSON.parse(saved) as Product[]).map((p) => ({ ...p, image: fixImg(p.image) }));
       } catch (e) {
-        return INITIAL_PRODUCTS;
+        return INITIAL_PRODUCTS.map((p) => ({ ...p, image: fixImg(p.image) }));
       }
     }
-    return INITIAL_PRODUCTS;
+    return INITIAL_PRODUCTS.map((p) => ({ ...p, image: fixImg(p.image) }));
   });
 
   // Cart state with localStorage persistence
@@ -60,7 +64,15 @@ export default function App() {
   const [sortBy, setSortBy] = useState('featured');
 
   // Admin Mode state
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(() => hasAdminSession());
+  const [isOrdersOpen, setIsOrdersOpen] = useState(false);
+  const [orders, setOrders] = useState<CompletedOrder[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('ashlyn_edu_orders_v1') || '[]');
+    } catch {
+      return [];
+    }
+  });
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
   const [isAdminProductOpen, setIsAdminProductOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
@@ -78,7 +90,11 @@ export default function App() {
     const saved = localStorage.getItem('ashlyn_edu_store_settings_v3');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (!parsed.whatsappNumber || parsed.whatsappNumber === '081234567890') {
+          parsed.whatsappNumber = '087895131563';
+        }
+        return parsed;
       } catch (e) {
         return DEFAULT_STORE_SETTINGS;
       }
@@ -100,6 +116,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('ashlyn_edu_products_v4_images', JSON.stringify(products));
   }, [products]);
+
+  useEffect(() => {
+    localStorage.setItem('ashlyn_edu_orders_v1', JSON.stringify(orders));
+  }, [orders]);
 
   // Sync cart to localStorage
   useEffect(() => {
@@ -177,6 +197,7 @@ export default function App() {
   // Admin toggling & Password
   const handleToggleAdmin = () => {
     if (isAdmin) {
+      clearAdminSession();
       setIsAdmin(false);
       showToast('Keluar dari Mode Admin.');
     } else {
@@ -187,7 +208,7 @@ export default function App() {
   const handleAdminLoginSuccess = () => {
     setIsAdmin(true);
     setIsAdminLoginOpen(false);
-    showToast('🌸 Mode Admin aktif! Password terverifikasi.');
+    showToast('🌸 Mode Admin aktif!');
   };
 
   // Product CRUD
@@ -209,9 +230,10 @@ export default function App() {
   };
 
   const handleSaveProduct = (
-    productData: Omit<Product, 'id'>,
+    rawData: Omit<Product, 'id'>,
     editId?: number
   ) => {
+    const productData = { ...rawData, image: fixImg(rawData.image) };
     if (editId) {
       setProducts((prev) =>
         prev.map((p) => (p.id === editId ? { ...productData, id: editId } : p))
@@ -263,7 +285,13 @@ export default function App() {
     customerInfo: OrderCustomerInfo,
     discountData?: ReturnType<typeof calculateBundlingDiscount>
   ) => {
-    const newOrderId = `ASH-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const existingIds = new Set(orders.map((o) => o.orderId));
+    const d = new Date();
+    const stamp = `${String(d.getFullYear()).slice(2)}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+    let newOrderId = '';
+    do {
+      newOrderId = `ASH-${stamp}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+    } while (existingIds.has(newOrderId));
     const finalDiscount = discountData || calculateBundlingDiscount(cart);
     const newOrder: CompletedOrder = {
       orderId: newOrderId,
@@ -282,9 +310,25 @@ export default function App() {
       isQuestionOnly: customerInfo.isQuestionOnly
     };
 
+    setOrders((prev) => [newOrder, ...prev]);
     setCompletedOrder(newOrder);
     setIsCheckoutOpen(false);
     setCart([]);
+
+    // Buka WhatsApp admin langsung (masih dalam aksi klik pengguna, jadi tidak diblokir popup).
+    const adminPhone = cleanWaPhone(storeSettings.whatsappNumber);
+    if (adminPhone.length >= 10) {
+      const text = generateWaOrderText(newOrder, storeSettings);
+
+      // Hanya checkout pesanan yang dikirim ke sheet. Mode pertanyaan tetap ke WhatsApp saja.
+      if (!newOrder.isQuestionOnly) {
+        sendOrderToGoogleSheets(text);
+      }
+
+      window.open(`https://wa.me/${adminPhone}?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+    } else {
+      showToast('Nomor WhatsApp toko belum diisi di Pengaturan.');
+    }
   };
 
   const cartDiscount = useMemo(() => calculateBundlingDiscount(cart), [cart]);
@@ -311,9 +355,6 @@ export default function App() {
                 <ShieldCheck className="w-4 h-4 text-[#8FA477]" />
                 <span>Dashboard Mode Admin</span>
               </span>
-              <span className="hidden md:inline-block text-[10px] bg-white/10 px-2 py-0.5 rounded-full text-stone-300">
-                Password: 080406
-              </span>
             </div>
 
             <div className="flex items-center space-x-1.5 sm:space-x-2">
@@ -326,6 +367,15 @@ export default function App() {
               >
                 <MessageSquare className="w-3.5 h-3.5 fill-white text-[#25D366]" />
                 <span>Fitur Pesan WA</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsOrdersOpen(true)}
+                className="cursor-pointer bg-[#8FA477] hover:bg-[#7d9366] text-white px-2.5 sm:px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 text-[11px] shadow-xs active:scale-95 transition"
+              >
+                <ClipboardList className="w-3.5 h-3.5" />
+                <span>Pesanan ({orders.length})</span>
               </button>
 
               {/* Add Product with Direct Image Upload */}
@@ -350,7 +400,7 @@ export default function App() {
 
               <button
                 type="button"
-                onClick={() => setIsAdmin(false)}
+                onClick={() => { clearAdminSession(); setIsAdmin(false); }}
                 className="cursor-pointer bg-stone-700 hover:bg-stone-600 text-stone-200 hover:text-white px-2 sm:px-2.5 py-1.5 rounded-xl text-[11px] flex items-center gap-1 transition"
                 title="Keluar dari Mode Admin"
               >
@@ -582,6 +632,17 @@ export default function App() {
         }}
         productToEdit={productToEdit}
         onSave={handleSaveProduct}
+      />
+
+      <OrdersModal
+        isOpen={isOrdersOpen}
+        onClose={() => setIsOrdersOpen(false)}
+        orders={orders}
+        onChangeStatus={(id, status: OrderStatus) =>
+          setOrders((prev) => prev.map((o) => (o.orderId === id ? { ...o, status } : o)))
+        }
+        onDelete={(id) => setOrders((prev) => prev.filter((o) => o.orderId !== id))}
+        onOpenInvoice={(o) => setInvoiceOrder(o)}
       />
 
       {/* 8. WhatsApp Simulator & Store Settings Modal */}

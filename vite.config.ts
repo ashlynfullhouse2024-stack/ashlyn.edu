@@ -5,10 +5,12 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
+    // Isi VITE_BASE=/nama-repo/ saat deploy ke GitHub Pages di subpath
+    base: process.env.VITE_BASE || '/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, '.'),
+        '@': path.resolve(import.meta.dirname || '.'),
       },
     },
     server: {
