@@ -32,12 +32,21 @@ import { WhatsAppSimulatorModal } from './components/WhatsAppSimulatorModal';
 import { Footer } from './components/Footer';
 
 export default function App() {
-  // Products state with localStorage persistence
+  // Products state with localStorage persistence (merging latest accessLink from INITIAL_PRODUCTS)
   const [products, setProducts] = useState<Product[]>(() => {
+    const initialMap = new Map(INITIAL_PRODUCTS.map((p) => [p.id, p]));
     const saved = localStorage.getItem('ashlyn_edu_products_v4_images');
     if (saved) {
       try {
-        return (JSON.parse(saved) as Product[]).map((p) => ({ ...p, image: fixImg(p.image) }));
+        const parsed = JSON.parse(saved) as Product[];
+        return parsed.map((p) => {
+          const init = initialMap.get(p.id);
+          return {
+            ...p,
+            image: fixImg(p.image),
+            accessLink: p.accessLink || init?.accessLink
+          };
+        });
       } catch (e) {
         return INITIAL_PRODUCTS.map((p) => ({ ...p, image: fixImg(p.image) }));
       }
@@ -300,8 +309,15 @@ export default function App() {
         month: 'long',
         year: 'numeric'
       }),
+      createdAt: Date.now(),
       customer: customerInfo,
-      items: [...cart],
+      items: cart.map((item) => {
+        const prod = products.find((p) => p.id === item.id);
+        return {
+          ...item,
+          accessLink: item.accessLink || prod?.accessLink
+        };
+      }),
       subtotalAmount: finalDiscount.subtotal,
       discountAmount: finalDiscount.discountAmount,
       discountLabel: finalDiscount.discountLabel,
@@ -643,6 +659,11 @@ export default function App() {
         }
         onDelete={(id) => setOrders((prev) => prev.filter((o) => o.orderId !== id))}
         onOpenInvoice={(o) => setInvoiceOrder(o)}
+        products={products}
+        settings={storeSettings}
+        onUpdateOrder={(updated: CompletedOrder) =>
+          setOrders((prev) => prev.map((o) => (o.orderId === updated.orderId ? updated : o)))
+        }
       />
 
       {/* 8. WhatsApp Simulator & Store Settings Modal */}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, 
   MessageSquare, 
@@ -41,8 +42,6 @@ export const OrderCheckoutModal: React.FC<OrderCheckoutModalProps> = ({
     questionText: ''
   });
 
-  if (!isOpen) return null;
-
   const discountData = calculateBundlingDiscount(cart);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -66,14 +65,28 @@ export const OrderCheckoutModal: React.FC<OrderCheckoutModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs flex items-end md:items-center justify-center p-0 md:p-4">
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0"
-        onClick={onClose}
-      />
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
+          {/* Backdrop with motion */}
+          <motion.div 
+            key="checkout-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.24, ease: 'easeOut' }}
+            className="fixed inset-0 bg-stone-900/40 backdrop-blur-xs"
+            onClick={onClose}
+          />
 
-      <div className="relative bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl p-5 space-y-4 max-h-[92vh] overflow-y-auto border-2 border-[#E9899F]/30 shadow-2xl z-10 custom-scrollbar">
+          <motion.div
+            key="checkout-panel"
+            initial={{ opacity: 0, scale: 0.94, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.94, y: 20 }}
+            transition={{ type: 'spring', damping: 26, stiffness: 320 }}
+            className="relative bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl p-5 space-y-4 max-h-[92vh] overflow-y-auto border-2 border-[#E9899F]/30 shadow-2xl z-10 custom-scrollbar"
+          >
         {/* Header */}
         <div className="flex justify-between items-center border-b border-stone-200 pb-3">
           <div className="flex items-center gap-2">
@@ -278,7 +291,9 @@ export const OrderCheckoutModal: React.FC<OrderCheckoutModalProps> = ({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 };

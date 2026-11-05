@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, 
   Plus, 
@@ -8,9 +9,11 @@ import {
   Link as LinkIcon, 
   Check, 
   Trash2, 
-  HelpCircle,
-  Sparkles,
-  Info
+  HelpCircle, 
+  Sparkles, 
+  Info,
+  Key,
+  UserCheck
 } from 'lucide-react';
 import { Product } from '../types';
 
@@ -67,7 +70,10 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
     curriculum: 'Kurikulum Merdeka',
     gradeLevel: 'Fase A (Kelas 1-2 SD)',
     inStock: true,
-    accessLink: ''
+    accessLink: '',
+    accessUsername: '',
+    accessPassword: '',
+    accessNote: ''
   });
 
   const [imageUploadMethod, setImageUploadMethod] = useState<'upload' | 'preset' | 'url'>('upload');
@@ -91,7 +97,10 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
         curriculum: productToEdit.curriculum || 'Kurikulum Merdeka',
         gradeLevel: productToEdit.gradeLevel || 'Semua Tingkat',
         inStock: productToEdit.inStock ?? true,
-        accessLink: productToEdit.accessLink || ''
+        accessLink: productToEdit.accessLink || '',
+        accessUsername: productToEdit.accessCredentials?.username || '',
+        accessPassword: productToEdit.accessCredentials?.password || '',
+        accessNote: productToEdit.accessNote || productToEdit.accessCredentials?.notes || ''
       });
       // Detect if existing image is a web URL or preset
       if (productToEdit.image.startsWith('data:image')) {
@@ -116,7 +125,10 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
         curriculum: 'Kurikulum Merdeka',
         gradeLevel: 'Fase A & B (SD)',
         inStock: true,
-        accessLink: ''
+        accessLink: '',
+        accessUsername: '',
+        accessPassword: '',
+        accessNote: ''
       });
       setImageUploadMethod('upload');
     }
@@ -197,6 +209,8 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
     }
     const finalPrice = formData.isFree ? 0 : Number(formData.price);
     const finalOriginalPrice = Number(formData.originalPrice) > 0 ? Number(formData.originalPrice) : undefined;
+    const hasCreds = formData.accessUsername.trim() || formData.accessPassword.trim();
+
     onSave({
       name: formData.name,
       category: formData.category,
@@ -210,19 +224,38 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       curriculum: formData.curriculum,
       gradeLevel: formData.gradeLevel,
       inStock: formData.inStock,
-      accessLink: formData.accessLink || undefined
+      accessLink: formData.accessLink.trim() || undefined,
+      accessCredentials: hasCreds ? {
+        username: formData.accessUsername.trim() || undefined,
+        password: formData.accessPassword.trim() || undefined
+      } : undefined,
+      accessNote: formData.accessNote.trim() || undefined
     }, productToEdit?.id);
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-stone-900/50 backdrop-blur-xs flex items-end md:items-center justify-center p-0 md:p-4">
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0"
-        onClick={onClose}
-      />
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
+          {/* Backdrop with motion */}
+          <motion.div 
+            key="admin-product-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.24, ease: 'easeOut' }}
+            className="fixed inset-0 bg-stone-900/50 backdrop-blur-xs"
+            onClick={onClose}
+          />
 
-      <div className="relative bg-white w-full max-w-xl rounded-t-3xl md:rounded-3xl p-5 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto border-2 border-[#E9899F]/30 shadow-2xl z-10 custom-scrollbar">
+          <motion.div
+            key="admin-product-panel"
+            initial={{ opacity: 0, scale: 0.94, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.94, y: 20 }}
+            transition={{ type: 'spring', damping: 26, stiffness: 320 }}
+            className="relative bg-white w-full max-w-xl rounded-t-3xl md:rounded-3xl p-5 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto border-2 border-[#E9899F]/30 shadow-2xl z-10 custom-scrollbar"
+          >
         {/* Header */}
         <div className="flex justify-between items-center border-b border-stone-200 pb-3">
           <div className="flex items-center gap-2">
@@ -571,6 +604,55 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
             </p>
           </div>
 
+          {/* Section Kredensial Privat (Khusus Aplikasi Privat / PKKM) */}
+          <div className="bg-[#FAF2E6]/80 p-3 rounded-2xl border border-[#E9899F]/30 space-y-2.5">
+            <div className="flex items-center gap-1.5 text-stone-800 font-bold text-xs">
+              <Key className="w-3.5 h-3.5 text-[#D9574F]" />
+              <span>Akses Login Khusus / Akun Privat (Opsional, misal PKKM)</span>
+            </div>
+            <p className="text-[10px] text-stone-500">
+              Jika produk memerlukan akun login khusus (username & password), masukkan di sini agar otomatis disertakan di pesan balasan WhatsApp pembeli.
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-stone-600 font-semibold text-[10px] mb-0.5">
+                  Username Akun
+                </label>
+                <input
+                  type="text"
+                  value={formData.accessUsername}
+                  onChange={(e) => setFormData({ ...formData, accessUsername: e.target.value })}
+                  placeholder="Contoh: guru_hebat"
+                  className="w-full bg-white border border-[#E9899F]/30 focus:border-[#D9574F] rounded-lg px-2.5 py-1.5 text-stone-800 outline-none font-mono text-[11px]"
+                />
+              </div>
+              <div>
+                <label className="block text-stone-600 font-semibold text-[10px] mb-0.5">
+                  Password Akun
+                </label>
+                <input
+                  type="text"
+                  value={formData.accessPassword}
+                  onChange={(e) => setFormData({ ...formData, accessPassword: e.target.value })}
+                  placeholder="Contoh: pkkm2026"
+                  className="w-full bg-white border border-[#E9899F]/30 focus:border-[#D9574F] rounded-lg px-2.5 py-1.5 text-stone-800 outline-none font-mono text-[11px]"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-stone-600 font-semibold text-[10px] mb-0.5">
+                Petunjuk Tambahan Akses Privat
+              </label>
+              <input
+                type="text"
+                value={formData.accessNote}
+                onChange={(e) => setFormData({ ...formData, accessNote: e.target.value })}
+                placeholder="Contoh: Masukkan username dan password di atas pada halaman login aplikasi."
+                className="w-full bg-white border border-[#E9899F]/30 focus:border-[#D9574F] rounded-lg px-2.5 py-1.5 text-stone-800 outline-none text-[11px]"
+              />
+            </div>
+          </div>
+
           <div>
             <label className="block text-stone-700 font-bold mb-1">
               Deskripsi Singkat Produk *
@@ -602,7 +684,9 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 };

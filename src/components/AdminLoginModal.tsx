@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { verifyAdminPassword, getLockRemainingMs, resetAdminAttempts } from '../lib/adminAuth';
 import { X, Lock, ShieldCheck, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
@@ -17,8 +18,6 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-
-  if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,14 +42,28 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0"
-        onClick={onClose}
-      />
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop with motion */}
+          <motion.div 
+            key="admin-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            className="fixed inset-0 bg-stone-900/40 backdrop-blur-xs"
+            onClick={onClose}
+          />
 
-      <div className="relative bg-white rounded-3xl max-w-sm w-full z-10 overflow-hidden border-2 border-[#E9899F]/30 shadow-2xl p-5 sm:p-6 space-y-4">
+          <motion.div
+            key="admin-panel"
+            initial={{ opacity: 0, scale: 0.92, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 16 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 320 }}
+            className="relative bg-white rounded-3xl max-w-sm w-full z-10 overflow-hidden border-2 border-[#E9899F]/30 shadow-2xl p-5 sm:p-6 space-y-4"
+          >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-stone-200 pb-3">
           <div className="flex items-center gap-2">
@@ -119,21 +132,6 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
                 </button>
               </div>
             )}
-
-            <div className="mt-2.5 p-2 bg-[#F8EBD8]/60 rounded-xl border border-[#E9899F]/20 text-[11px] text-stone-600 flex items-center justify-between">
-              <span>Password Admin:</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setPassword('080406');
-                  setError('');
-                }}
-                className="cursor-pointer font-mono font-bold text-[#D9574F] bg-white px-2 py-0.5 rounded-lg border border-[#E9899F]/30 hover:bg-[#D9574F] hover:text-white transition"
-                title="Klik untuk mengisi otomatis"
-              >
-                080406
-              </button>
-            </div>
           </div>
 
           <button
@@ -144,7 +142,9 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
             Masuk ke Mode Admin 🌸
           </button>
         </form>
-      </div>
-    </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 };

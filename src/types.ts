@@ -21,6 +21,8 @@ export interface Product {
   gradeLevel?: string;
   inStock?: boolean;
   accessLink?: string; // Link template canva / file download / GDrive
+  accessCredentials?: { username?: string; password?: string; notes?: string };
+  accessNote?: string; // Catatan login / petunjuk akses privat (mis. PKKM)
 }
 
 export interface CartItem extends Product {
@@ -61,6 +63,8 @@ export type OrderStatus = 'Menunggu Konfirmasi' | 'Diproses' | 'Dikirim' | 'Sele
 export interface CompletedOrder {
   orderId: string;
   date: string;
+  createdAt?: number; // timestamp in milliseconds
+  reminderSentAt?: number; // timestamp when last reminder was sent
   customer: OrderCustomerInfo;
   items: CartItem[];
   subtotalAmount?: number;

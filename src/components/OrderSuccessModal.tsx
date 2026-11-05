@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { 
   CheckCircle2, 
@@ -41,9 +42,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
     }
   }, [order]);
 
-  if (!order) return null;
-
-  const plainTextMessage = generateWaOrderText(order, settings);
+  const plainTextMessage = order ? generateWaOrderText(order, settings) : '';
   const targetPhone = cleanWaPhone(settings.whatsappNumber);
   const waUrl = `https://wa.me/${targetPhone}?text=${encodeURIComponent(plainTextMessage)}`;
 
@@ -54,14 +53,28 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0"
-        onClick={onClose}
-      />
+    <AnimatePresence>
+      {order && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
+          {/* Backdrop with motion */}
+          <motion.div 
+            key="success-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.24, ease: 'easeOut' }}
+            className="fixed inset-0 bg-stone-900/40 backdrop-blur-xs"
+            onClick={onClose}
+          />
 
-      <div className="relative bg-white w-full max-w-md rounded-3xl p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto border-2 border-[#E9899F]/30 shadow-2xl z-10 custom-scrollbar">
+          <motion.div
+            key="success-panel"
+            initial={{ opacity: 0, scale: 0.92, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 16 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 320 }}
+            className="relative bg-white w-full max-w-md rounded-3xl p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto border-2 border-[#E9899F]/30 shadow-2xl z-10 custom-scrollbar"
+          >
         {/* Header */}
         <div className="text-center space-y-1">
           <div className="w-14 h-14 bg-[#E9899F]/20 text-[#D9574F] rounded-2xl flex items-center justify-center mx-auto text-2xl border-2 border-[#E9899F]/40 mb-2">
@@ -129,7 +142,9 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
         >
           Selesai & Tutup
         </button>
-      </div>
-    </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 };

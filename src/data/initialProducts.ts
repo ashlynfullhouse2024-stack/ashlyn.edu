@@ -1,4 +1,4 @@
-import { Product, StoreSettings } from '../types';
+import { Product, StoreSettings, CompletedOrder, OrderStatus } from '../types';
 
 export const INITIAL_PRODUCTS: Product[] = [
   {
@@ -13,7 +13,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: "Bantu siapkan berkas PKKM dengan lebih praktis dan mudah disesuaikan.",
     badge: "Diskon Spesial",
     curriculum: "Administrasi Kepala Sekolah",
-    inStock: true
+    inStock: true,
+    accessLink: "https://generator-pkkm.pages.dev/"
   },
   {
     id: 2,
@@ -27,7 +28,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: "Buat RPP dengan bantuan AI menggunakan API Key pribadi.",
     badge: "Best Seller",
     curriculum: "Kurikulum Merdeka",
-    inStock: true
+    inStock: true,
+    accessLink: "https://edusuite-ai.pages.dev/"
   },
   {
     id: 3,
@@ -39,7 +41,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     image: "/assets/aistudio/03_study-notes.webp",
     description: "Susun materi belajar menjadi catatan, peta konsep, ringkasan, atau slide.",
     curriculum: "Literasi Belajar",
-    inStock: true
+    inStock: true,
+    accessLink: "https://studynotes-miniest.pages.dev/"
   },
   {
     id: 4,
@@ -53,7 +56,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: "Rancang LKPD interaktif dengan pendekatan gamifikasi dan bantuan AI.",
     badge: "Hemat 75%",
     curriculum: "Active Learning",
-    inStock: true
+    inStock: true,
+    accessLink: "https://lkpd-gamification.toko-ashlyn.workers.dev/"
   },
   {
     id: 5,
@@ -67,7 +71,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: "Asisten digital untuk mendukung tugas guru mata pelajaran, wali kelas, dan pembina ekskul.",
     badge: "Wajib Coba",
     curriculum: "Manajemen Sekolah",
-    inStock: true
+    inStock: true,
+    accessLink: "https://asistenguru.toko-ashlyn.workers.dev/"
   },
   {
     id: 6,
@@ -80,7 +85,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: "Kumpulan prompt untuk membantu menyusun LKPD kapan saja.",
     badge: "Sekali Beli",
     curriculum: "AI Education",
-    inStock: true
+    inStock: true,
+    accessLink: "https://lkpd-ai.pages.dev/"
   },
   {
     id: 7,
@@ -93,7 +99,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     image: "/assets/aistudio/07_aplikasi-guru-piket.webp",
     description: "Bantu kelola kegiatan dan administrasi piket guru.",
     curriculum: "Tata Tertib Sekolah",
-    inStock: true
+    inStock: true,
+    accessLink: "https://portalgurupiket.toko-ashlyn.workers.dev/"
   },
   {
     id: 8,
@@ -106,7 +113,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     image: "/assets/aistudio/08_inklusi-studio-untuk-guru-bk.webp",
     description: "Perangkat bantu untuk mendukung layanan BK dan kebutuhan pendidikan inklusif.",
     curriculum: "Bimbingan Konseling",
-    inStock: true
+    inStock: true,
+    accessLink: "https://inklusistudio.pages.dev/"
   },
   {
     id: 9,
@@ -147,7 +155,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: "Prompt untuk membantu menyusun RPP berbagai jenjang.",
     badge: "Semua Jenjang",
     curriculum: "Kurikulum Merdeka",
-    inStock: true
+    inStock: true,
+    accessLink: "https://rpp-newgen.pages.dev/"
   },
   {
     id: 12,
@@ -160,7 +169,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     image: "/assets/aistudio/11_prompt-ai-rpp-kbc-pm-smp-only.webp",
     description: "Prompt AI untuk membantu membuat RPP KBC+PM khusus jenjang SMP.",
     curriculum: "SMP / MTs",
-    inStock: true
+    inStock: true,
+    accessLink: "https://rpp-pmkbc.pages.dev/"
   },
   {
     id: 13,
@@ -667,4 +677,206 @@ export function generateWaOrderText(
 export function fixImg(src: string): string {
   const base = import.meta.env.BASE_URL || '/';
   return src.startsWith('/assets/') && base !== '/' ? base + src.slice(1) : src;
+}
+
+// Parse order timestamp from createdAt or localized Indonesian date
+export function parseOrderTimestamp(order: CompletedOrder): number {
+  if (order.createdAt && !isNaN(order.createdAt)) {
+    return order.createdAt;
+  }
+  const standardParse = Date.parse(order.date);
+  if (!isNaN(standardParse)) {
+    return standardParse;
+  }
+  const monthsMap: Record<string, number> = {
+    januari: 0, februari: 1, maret: 2, april: 3, mei: 4, juni: 5,
+    juli: 6, agustus: 7, september: 8, oktober: 9, november: 10, desember: 11
+  };
+  const parts = order.date.toLowerCase().split(/\s+/);
+  if (parts.length >= 3) {
+    const day = parseInt(parts[0], 10);
+    const month = monthsMap[parts[1]];
+    const year = parseInt(parts[2], 10);
+    if (!isNaN(day) && month !== undefined && !isNaN(year)) {
+      return new Date(year, month, day, 12, 0, 0).getTime();
+    }
+  }
+  return Date.now() - 25 * 3600 * 1000;
+}
+
+// Cek apakah pesanan masih berstatus 'Menunggu Konfirmasi' dan usianya > 24 jam
+export function isOrderPendingOver24Hours(order: CompletedOrder): boolean {
+  if (order.status !== 'Menunggu Konfirmasi' || order.isQuestionOnly) return false;
+  const time = parseOrderTimestamp(order);
+  const diffHours = (Date.now() - time) / (1000 * 60 * 60);
+  return diffHours >= 24;
+}
+
+// Menampilkan durasi usia pesanan secara manusiawi
+export function getOrderAgeText(order: CompletedOrder): string {
+  const time = parseOrderTimestamp(order);
+  const diffMs = Date.now() - time;
+  if (diffMs < 0) return 'Baru saja';
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  if (diffHours < 1) {
+    const diffMins = Math.max(1, Math.floor(diffMs / (1000 * 60)));
+    return `${diffMins} mnt lalu`;
+  }
+  if (diffHours < 24) {
+    return `${diffHours} jam lalu`;
+  }
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays} hari lalu (${diffHours} jam)`;
+}
+
+// Membuat pesan WhatsApp konfirmasi pembayaran + link akses materi otomatis (Mendukung Produk Tunggal & Paket Bundling)
+export function generateAccessFulfillmentMessage(
+  order: CompletedOrder,
+  catalog?: Product[],
+  settings?: StoreSettings
+): string {
+  const storeName = settings?.storeName || 'Ashlyn Edu';
+  const isBundle = order.items.length > 1;
+
+  let text = `🌸 *KONFIRMASI PEMBAYARAN & LINK AKSES RESMI* 🌸\n`;
+  text += `━━━━━━━━━━━━━━━━━━━━━\n`;
+  text += `Halo Kak *${order.customer.name}*! Terima kasih banyak atas pembayarannya. 🙏\n`;
+  text += `Pesanan *${order.orderId}* telah kami konfirmasi dan BERHASIL DITERIMA. ✅\n\n`;
+
+  if (isBundle) {
+    text += `🎁 *PAKET BUNDLING (${order.items.length} PRODUK DIGITAL SEKALIGUS)*\n`;
+    text += `Berikut adalah seluruh link akses materi & aplikasi pesanan Kakak:\n\n`;
+  } else {
+    text += `Berikut adalah tautan / link akses resmi materi & aplikasi yang Kakak pesan:\n\n`;
+  }
+
+  const productMap = new Map<string, Product>();
+  if (catalog) {
+    catalog.forEach((p) => {
+      productMap.set(p.name.trim().toLowerCase(), p);
+      productMap.set(String(p.id), p);
+    });
+  }
+
+  order.items.forEach((item, idx) => {
+    const prod = productMap.get(item.name.trim().toLowerCase()) || productMap.get(String(item.id));
+    const directLink = item.accessLink || prod?.accessLink || '';
+    const creds = item.accessCredentials || prod?.accessCredentials;
+    const note = item.accessNote || prod?.accessNote;
+
+    text += `${idx + 1}. 🎓 *${item.name}* ${item.qty && item.qty > 1 ? `(${item.qty}x)` : ''}\n`;
+    if (directLink) {
+      text += `   🔗 *Link Akses:* ${directLink}\n`;
+    } else {
+      text += `   🔗 *Link Akses:* (File template/materi dikirimkan langsung melalui chat ini)\n`;
+    }
+    if (creds?.username) {
+      text += `   👤 *Username:* ${creds.username}\n`;
+    }
+    if (creds?.password) {
+      text += `   🔑 *Password:* ${creds.password}\n`;
+    }
+    if (note || creds?.notes) {
+      text += `   💡 *Petunjuk Akses:* ${note || creds?.notes}\n`;
+    }
+    text += `\n`;
+  });
+
+  text += `━━━━━━━━━━━━━━━━━━━━━\n`;
+  text += `📌 *Panduan Penggunaan:*
+• Simpan atau bookmark link di atas pada browser Kakak agar mudah diakses kapan saja.
+• Untuk template Canva, pastikan sudah masuk (login) ke Canva sebelum membuka template.
+• Jika ada pertanyaan atau kendala teknis dalam mengakses materi, silakan langsung balas pesan ini.
+
+Selamat berkarya & sukses selalu untuk kegiatan mengajarnya! ✨🎓
+— Salam hangat, *${storeName}*`;
+
+  return text;
+}
+
+// Menghasilkan teks WhatsApp untuk update status pesanan spesifik (Diproses, Dikirim, Selesai, dll)
+export function generateOrderStatusUpdateMessage(
+  order: CompletedOrder,
+  status: OrderStatus,
+  catalog?: Product[],
+  settings?: StoreSettings
+): string {
+  const storeName = settings?.storeName || 'Ashlyn Edu';
+  const isBundle = order.items.length > 1;
+
+  if (status === 'Selesai' || status === 'Dikirim') {
+    return generateAccessFulfillmentMessage(order, catalog, settings);
+  }
+
+  if (status === 'Diproses') {
+    let text = `🌸 *UPDATE STATUS: PESANAN SEDANG DIPROSES* 🌸\n`;
+    text += `━━━━━━━━━━━━━━━━━━━━━\n`;
+    text += `Halo Kak *${order.customer.name}*! Salam dari ${storeName}. 😊\n\n`;
+    text += `Kami menginformasikan bahwa pembayaran untuk pesanan Kakak telah kami verifikasi:\n`;
+    text += `📋 *No. Pesanan:* ${order.orderId}\n`;
+    text += `📅 *Tanggal:* ${order.date}\n`;
+    text += `🛍️ *Item Pesanan:* ${isBundle ? `(Paket Bundling ${order.items.length} Item)` : ''}\n`;
+    order.items.forEach((item, idx) => {
+      text += `   ${idx + 1}. ${item.name} (${item.qty}x)\n`;
+    });
+    text += `💰 *Total Pembayaran:* ${formatRupiah(order.totalAmount)}\n`;
+    text += `━━━━━━━━━━━━━━━━━━━━━\n`;
+    text += `Status saat ini: ⚙️ *SEDANG DIPROSES / DISIAPKAN*\n\n`;
+    text += `Tim kami sedang menyiapkan hak akses dan materi pesanan Kakak. Link akses resmi akan segera kami kirimkan ke chat WhatsApp ini dalam beberapa saat lagi.\n\n`;
+    text += `Mohon ditunggu sebentar ya Kak. Terima kasih banyak atas kesabarannya! 🌸✨\n`;
+    text += `— *${storeName}*`;
+    return text;
+  }
+
+  if (status === 'Dibatalkan') {
+    let text = `🌸 *PEMBERITAHUAN PEMBATALAN PESANAN* 🌸\n`;
+    text += `━━━━━━━━━━━━━━━━━━━━━\n`;
+    text += `Halo Kak *${order.customer.name}*,\n\n`;
+    text += `Pemberitahuan bahwa pesanan Kakak:\n`;
+    text += `📋 *No. Pesanan:* ${order.orderId}\n`;
+    text += `🛍️ *Item:* ${order.items.map((i) => i.name).join(', ')}\n`;
+    text += `Status saat ini telah diubah menjadi: ❌ *DIBATALKAN*\n\n`;
+    text += `Jika pembatalan ini tidak disengaja atau Kakak masih ingin melanjutkan pemesanan, silakan balas pesan ini agar tim kami dapat membantu Kakak kembali.\n\n`;
+    text += `Terima kasih! 🙏\n— *${storeName}*`;
+    return text;
+  }
+
+  // Fallback: Menunggu Konfirmasi
+  return generatePendingReminderMessage(order, settings);
+}
+
+// Membuat pesan pengingat sopan ke pelanggan untuk pesanan 'Menunggu Konfirmasi' > 24 jam
+export function generatePendingReminderMessage(
+  order: CompletedOrder,
+  settings?: StoreSettings
+): string {
+  const storeName = settings?.storeName || 'Ashlyn Edu';
+  let text = `🌸 *PENGINGAT PESANAN DIGITAL - ${storeName.toUpperCase()}* 🌸\n`;
+  text += `━━━━━━━━━━━━━━━━━━━━━\n`;
+  text += `Halo Kak *${order.customer.name}*! Salam dari ${storeName}. 😊\n\n`;
+  text += `Kami ingin mengonfirmasi pesanan materi ajar digital yang Kakak buat sebelumnya:\n`;
+  text += `📋 *No. Pesanan:* ${order.orderId}\n`;
+  text += `📅 *Tanggal:* ${order.date}\n`;
+  text += `🛍️ *Item Pesanan:*\n`;
+  order.items.forEach((item, idx) => {
+    text += `   ${idx + 1}. ${item.name} (${item.qty}x)\n`;
+  });
+  text += `💰 *Total Pembayaran:* ${formatRupiah(order.totalAmount)}\n`;
+  text += `💳 *Metode Pembayaran:* ${order.customer.paymentMethod}\n`;
+
+  if (settings?.includeBankInWa && settings.bankAccounts?.length) {
+    text += `\n*Rekening Pembayaran:*\n`;
+    settings.bankAccounts.forEach((b) => {
+      text += `• ${b.bankName}: *${b.accountNumber}* (a.n. ${b.accountHolder})\n`;
+    });
+  }
+
+  text += `\n━━━━━━━━━━━━━━━━━━━━━\n`;
+  text += `Saat ini status pesanan masih *Menunggu Konfirmasi Pembayaran* (lebih dari 24 jam).\n\n`;
+  text += `Apakah ada kendala saat transfer atau ada detail materi yang ingin ditanyakan terlebih dahulu, Kak?\n\n`;
+  text += `Jika Kakak *sudah melakukan transfer*, mohon cukup kirimkan foto/tangkapan layar *bukti transfer* di chat ini agar kami bisa segera mengaktifkan & mengirimkan link akses materinya. 🚀\n\n`;
+  text += `Terima kasih banyak, Kak! Semoga hari Kakak menyenangkan. 🌸✨\n`;
+  text += `— *${storeName}*`;
+
+  return text;
 }

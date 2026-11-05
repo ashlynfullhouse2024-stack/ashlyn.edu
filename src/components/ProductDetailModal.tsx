@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, 
   ShoppingBag, 
@@ -33,9 +34,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const [quantity, setQuantity] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
 
-  if (!product) return null;
-
   const handleAddToCart = () => {
+    if (!product) return;
     onAddToCart(product, quantity);
     setIsAdded(true);
     setTimeout(() => {
@@ -44,26 +44,41 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   };
 
   const handleBuyNow = () => {
+    if (!product) return;
     onBuyNow(product, quantity);
   };
 
   const handleEditThisProduct = () => {
-    if (onEditProduct) {
+    if (onEditProduct && product) {
       onClose();
       onEditProduct(product);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs flex items-end md:items-center justify-center p-0 md:p-4">
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0"
-        onClick={onClose}
-      />
+    <AnimatePresence>
+      {product && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
+          {/* Backdrop with motion */}
+          <motion.div 
+            key="detail-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.24, ease: 'easeOut' }}
+            className="fixed inset-0 bg-stone-900/40 backdrop-blur-xs"
+            onClick={onClose}
+          />
 
-      {/* Modal Dialog Lilnami Style */}
-      <div className="relative bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl p-5 space-y-4 max-h-[90vh] overflow-y-auto border-2 border-[#E9899F]/30 shadow-2xl z-10 custom-scrollbar">
+          {/* Modal Dialog with motion */}
+          <motion.div
+            key="detail-modal"
+            initial={{ opacity: 0, scale: 0.94, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.94, y: 20 }}
+            transition={{ type: 'spring', damping: 26, stiffness: 320 }}
+            className="relative bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl p-5 space-y-4 max-h-[90vh] overflow-y-auto border-2 border-[#E9899F]/30 shadow-2xl z-10 custom-scrollbar"
+          >
         {/* Header */}
         <div className="flex justify-between items-start gap-3">
           <div className="flex items-center gap-3">
@@ -226,7 +241,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             <span>🌸</span>
           </button>
         </div>
-      </div>
-    </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 };

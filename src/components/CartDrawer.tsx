@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, 
   Trash2, 
@@ -33,20 +34,32 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   onProceedCheckout,
   onAddBundle
 }) => {
-  if (!isOpen) return null;
-
   const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
   const discountData = calculateBundlingDiscount(cart);
 
   return (
-    <div className="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs flex justify-end">
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0"
-        onClick={onClose}
-      />
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          {/* Backdrop with motion */}
+          <motion.div 
+            key="cart-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.24, ease: 'easeOut' }}
+            className="fixed inset-0 bg-stone-900/40 backdrop-blur-xs"
+            onClick={onClose}
+          />
 
-      <div className="relative bg-white w-full max-w-md h-full flex flex-col p-4 sm:p-5 border-l-2 border-[#E9899F]/30 shadow-2xl z-10">
+          <motion.div
+            key="cart-panel"
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            className="relative bg-white w-full max-w-md h-full flex flex-col p-4 sm:p-5 border-l-2 border-[#E9899F]/30 shadow-2xl z-10"
+          >
         {/* Header Lilnami Style */}
         <div className="flex justify-between items-center border-b border-stone-200 pb-3">
           <div className="flex items-center gap-2">
@@ -256,7 +269,9 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             </div>
           </div>
         )}
-      </div>
-    </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 };
