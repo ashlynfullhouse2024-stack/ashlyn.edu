@@ -60,6 +60,14 @@ export interface BundlePackage {
 
 export type OrderStatus = 'Menunggu Konfirmasi' | 'Diproses' | 'Dikirim' | 'Selesai' | 'Dibatalkan';
 
+export interface PkkmLicenseAccount {
+  no: number;
+  username: string;
+  password: string;
+  role: string;
+  licenseCode: string;
+}
+
 export interface CompletedOrder {
   orderId: string;
   date: string;
@@ -73,6 +81,13 @@ export interface CompletedOrder {
   totalAmount: number;
   status: OrderStatus;
   isQuestionOnly?: boolean;
+  assignedLicense?: {
+    username: string;
+    password: string;
+    role?: string;
+    licenseCode: string;
+    productName?: string;
+  };
 }
 
 export interface BankAccount {

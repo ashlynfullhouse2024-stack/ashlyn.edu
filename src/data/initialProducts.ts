@@ -1,6 +1,38 @@
-import { Product, StoreSettings, CompletedOrder, OrderStatus } from '../types';
+import { Product, StoreSettings, CompletedOrder, OrderStatus, PkkmLicenseAccount } from '../types';
 
 export const INITIAL_PRODUCTS: Product[] = [
+  {
+    id: 101,
+    name: "Paket Bundling: EduSuite + LKPD AI",
+    category: "Aplikasi & Administrasi",
+    price: 119000,
+    originalPrice: 144000,
+    rating: 5.0,
+    reviews: 240,
+    image: "/assets/aistudio/02_aplikasi-pembuat-rpp-guru.webp",
+    description: "Kombinasi hemat 2 aplikasi unggulan: Pembuat RPP AI (EduSuite AI) + Prompt LKPD AI Sekali Beli untuk Selamanya.",
+    badge: "Paket Bundling",
+    curriculum: "EduSuite + LKPD AI",
+    inStock: true,
+    accessLink: "https://edusuite-ai.pages.dev/ dan https://lkpd-ai.pages.dev/",
+    accessNote: "Paket 2 Aplikasi: 1) EduSuite AI (https://edusuite-ai.pages.dev/) 2) Prompt LKPD AI (https://lkpd-ai.pages.dev/)"
+  },
+  {
+    id: 102,
+    name: "Paket Bundling: PKKM + EduSuite",
+    category: "Aplikasi & Administrasi",
+    price: 199000,
+    originalPrice: 248000,
+    rating: 5.0,
+    reviews: 380,
+    image: "/assets/aistudio/01_pkkm-bikin-stres.webp",
+    description: "Paket komplit super praktis: Generator Bukti Fisik PKKM 2026 AI (Lengkap 1 Akun Lisensi Privat) + Aplikasi RPP EduSuite AI.",
+    badge: "Paket Bundling",
+    curriculum: "PKKM + EduSuite AI",
+    inStock: true,
+    accessLink: "https://generator-pkkm.pages.dev/ dan https://edusuite-ai.pages.dev/",
+    accessNote: "Paket Komplit: 1) Generator PKKM + 1 Akun Lisensi Privat Guru/Kamad 2) EduSuite AI"
+  },
   {
     id: 1,
     name: "PKKM Bikin Stres???",
@@ -14,7 +46,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     badge: "Diskon Spesial",
     curriculum: "Administrasi Kepala Sekolah",
     inStock: true,
-    accessLink: "https://generator-pkkm.pages.dev/"
+    accessLink: "https://generator-pkkm.pages.dev/",
+    accessNote: "Setiap pembeli mendapatkan 1 Akun Lisensi Privat resmi (Username, Password & Kode Lisensi unik). Login di https://generator-pkkm.pages.dev/"
   },
   {
     id: 2,
@@ -491,6 +524,46 @@ export const DEFAULT_STORE_SETTINGS = {
   includeBankInWa: true
 };
 
+// 📋 Daftar 10 Akun Lisensi Pembeli Resmi untuk Aplikasi PKKM 2026 AI
+// Sesuai instruksi: 1 akun unik untuk masing-masing pembeli (tidak tertukar)
+export const PKKM_LICENSE_ACCOUNTS: PkkmLicenseAccount[] = [
+  { no: 1, username: 'madrasah_juara01', password: 'MadrasahMaju#2026', role: 'Guru (205 Instrumen + AI)', licenseCode: 'LIC-PKKM-JR01-2026' },
+  { no: 2, username: 'pkkm_kemenag02', password: 'BerkahPanca*719', role: 'Guru (205 Instrumen + AI)', licenseCode: 'LIC-PKKM-KM02-2026' },
+  { no: 3, username: 'guru_prestasi03', password: 'CintaIlmu!8834', role: 'Guru (205 Instrumen + AI)', licenseCode: 'LIC-PKKM-GP03-2026' },
+  { no: 4, username: 'kamad_hebat04', password: 'AmanahKamad@452', role: 'Kamad (205 Instrumen + AI)', licenseCode: 'LIC-PKKM-KH04-2026' },
+  { no: 5, username: 'madrasah_unggul05', password: 'SuksesPKKM#916', role: 'Guru (205 Instrumen + AI)', licenseCode: 'LIC-PKKM-MU05-2026' },
+  { no: 6, username: 'tim_pkkm2026_06', password: 'PancaCinta$628', role: 'Guru (205 Instrumen + AI)', licenseCode: 'LIC-PKKM-TP06-2026' },
+  { no: 7, username: 'madrasah_bermutu07', password: 'KinerjaPenuh!351', role: 'Guru (205 Instrumen + AI)', licenseCode: 'LIC-PKKM-MB07-2026' },
+  { no: 8, username: 'guru_inovatif08', password: 'KBCMadrasah*742', role: 'Guru (205 Instrumen + AI)', licenseCode: 'LIC-PKKM-GI08-2026' },
+  { no: 9, username: 'asesmen_pkkm09', password: 'AkreditasiA@820', role: 'Guru (205 Instrumen + AI)', licenseCode: 'LIC-PKKM-AP09-2026' },
+  { no: 10, username: 'madrasah_teladan10', password: 'InsanMulia#539', role: 'Guru (205 Instrumen + AI)', licenseCode: 'LIC-PKKM-MT10-2026' },
+];
+
+// Alokasikan 1 akun lisensi unik untuk setiap pesanan PKKM
+export function allocatePkkmLicenseForOrder(existingOrders: CompletedOrder[] = []): PkkmLicenseAccount {
+  const usedUsernames = new Set<string>();
+  existingOrders.forEach((o) => {
+    if (o.assignedLicense?.username) {
+      usedUsernames.add(o.assignedLicense.username);
+    }
+  });
+
+  // Ambil akun yang belum terpakai pertama
+  const available = PKKM_LICENSE_ACCOUNTS.find((acc) => !usedUsernames.has(acc.username));
+  if (available) return available;
+
+  // Jika semua 10 lisensi sudah terpakai, putar secara sekuensial
+  const assignedCount = existingOrders.filter((o) => o.assignedLicense).length;
+  return PKKM_LICENSE_ACCOUNTS[assignedCount % PKKM_LICENSE_ACCOUNTS.length];
+}
+
+// Cek apakah item atau pesanan melibatkan aplikasi PKKM
+export function isItemPkkm(item: { id?: number; name?: string }): boolean {
+  if (item.id === 1 || item.id === 102) return true;
+  const lower = (item.name || '').toLowerCase();
+  return lower.includes('pkkm');
+}
+
 export const RECOMMENDED_BUNDLES: {
   id: string;
   title: string;
@@ -503,41 +576,30 @@ export const RECOMMENDED_BUNDLES: {
   emoji: string;
 }[] = [
   {
-    id: 'bundle-guru-ai',
-    title: 'Paket Komplit Guru AI',
-    tag: 'Paling Laris 🔥',
-    description: 'RPP Generator All-In + LKPD Gamification AI + Asisten Guru Pintar',
-    productIds: [11, 4, 5],
-    normalPrice: 203000,
-    bundlePrice: 165000,
-    savingAmount: 38000,
-    emoji: '🤖'
+    id: 'bundle-edusuite-lkpd',
+    title: 'EduSuite + LKPD AI',
+    tag: 'Hemat Rp 25rb 🔥',
+    description: 'Aplikasi Pembuat RPP Guru (EduSuite AI) + Prompt LKPD AI Sekali Beli untuk Selamanya',
+    productIds: [2, 6],
+    normalPrice: 144000,
+    bundlePrice: 119000,
+    savingAmount: 25000,
+    emoji: '⚡'
   },
   {
-    id: 'bundle-canva-aesthetic',
-    title: 'Paket Canva Administrasi Pastel',
-    tag: 'Hemat Rp 15rb 🌸',
-    description: 'Teacher Dashboard Canva + Jurnal Guru Editable + Twibbon Back to School',
-    productIds: [10, 13, 35],
-    normalPrice: 60000,
-    bundlePrice: 45000,
-    savingAmount: 15000,
-    emoji: '🎨'
-  },
-  {
-    id: 'bundle-literasi-bahasa',
-    title: 'Paket Literasi & Bahasa Inggris',
-    tag: 'Diskon Spesial 📚',
-    description: 'Alphabet Workbook + Tracing Huruf + Subject To Be & Pronouns',
-    productIds: [24, 26, 25],
-    normalPrice: 50000,
-    bundlePrice: 39000,
-    savingAmount: 11000,
-    emoji: '✏️'
+    id: 'bundle-pkkm-edusuite',
+    title: 'PKKM + EduSuite',
+    tag: 'Paling Komplit 👑',
+    description: 'Generator Bukti Fisik PKKM 2026 AI (Lengkap 1 Akun Lisensi Privat) + Aplikasi RPP EduSuite AI',
+    productIds: [1, 2],
+    normalPrice: 248000,
+    bundlePrice: 199000,
+    savingAmount: 49000,
+    emoji: '🏆'
   }
 ];
 
-export function calculateBundlingDiscount(cart: { price: number; qty?: number }[]): {
+export function calculateBundlingDiscount(cart: { id?: number; price: number; qty?: number; name?: string }[]): {
   subtotal: number;
   discountAmount: number;
   discountPercent: number;
@@ -546,6 +608,36 @@ export function calculateBundlingDiscount(cart: { price: number; qty?: number }[
   total: number;
 } {
   const subtotal = cart.reduce((sum, item) => sum + item.price * (item.qty || 1), 0);
+  const cartIds = new Set(cart.map((c) => c.id));
+
+  // Cek kombinasi bundling khusus yang diminta:
+  // 1. PKKM (ID 1) + EduSuite (ID 2): Diskon Rp 49.000 (Harga jadi Rp 199.000)
+  const hasPkkmAndEduSuite = (cartIds.has(1) && cartIds.has(2)) || cartIds.has(102);
+  // 2. EduSuite (ID 2) + LKPD AI (ID 6): Diskon Rp 25.000 (Harga jadi Rp 119.000)
+  const hasEduSuiteAndLkpd = (cartIds.has(2) && cartIds.has(6)) || cartIds.has(101);
+
+  if (hasPkkmAndEduSuite && cart.length === 2 && !cartIds.has(102)) {
+    return {
+      subtotal,
+      discountAmount: 49000,
+      discountPercent: 20,
+      discountLabel: 'Paket Bundling Spesial (PKKM + EduSuite: Hemat Rp 49.000)',
+      nextTierMessage: '🎉 Kamu mendapatkan harga bundling spesial PKKM + EduSuite!',
+      total: Math.max(0, subtotal - 49000)
+    };
+  }
+
+  if (hasEduSuiteAndLkpd && cart.length === 2 && !cartIds.has(101)) {
+    return {
+      subtotal,
+      discountAmount: 25000,
+      discountPercent: 17,
+      discountLabel: 'Paket Bundling Spesial (EduSuite + LKPD AI: Hemat Rp 25.000)',
+      nextTierMessage: '⚡ Kamu mendapatkan harga bundling spesial EduSuite + LKPD AI!',
+      total: Math.max(0, subtotal - 25000)
+    };
+  }
+
   const totalPaidItems = cart
     .filter((item) => item.price > 0)
     .reduce((sum, item) => sum + (item.qty || 1), 0);
@@ -736,7 +828,14 @@ export function generateAccessFulfillmentMessage(
   settings?: StoreSettings
 ): string {
   const storeName = settings?.storeName || 'Ashlyn Edu';
-  const isBundle = order.items.length > 1;
+  const hasMultipleItems = order.items.length > 1;
+  const isBundleItem = order.items.some(
+    (i) => i.id === 101 || i.id === 102 || (i.name || '').toLowerCase().includes('bundling')
+  );
+  const isBundle = hasMultipleItems || isBundleItem;
+
+  // Akun lisensi PKKM yang dialokasikan khusus untuk pembeli ini
+  const pkkmLic = order.assignedLicense || allocatePkkmLicenseForOrder([order]);
 
   let text = `🌸 *KONFIRMASI PEMBAYARAN & LINK AKSES RESMI* 🌸\n`;
   text += `━━━━━━━━━━━━━━━━━━━━━\n`;
@@ -744,8 +843,8 @@ export function generateAccessFulfillmentMessage(
   text += `Pesanan *${order.orderId}* telah kami konfirmasi dan BERHASIL DITERIMA. ✅\n\n`;
 
   if (isBundle) {
-    text += `🎁 *PAKET BUNDLING (${order.items.length} PRODUK DIGITAL SEKALIGUS)*\n`;
-    text += `Berikut adalah seluruh link akses materi & aplikasi pesanan Kakak:\n\n`;
+    text += `🎁 *PAKET BUNDLING MATERI & APLIKASI DIGITAL*\n`;
+    text += `Berikut adalah seluruh link akses resmi dan akun lisensi pesanan Kakak:\n\n`;
   } else {
     text += `Berikut adalah tautan / link akses resmi materi & aplikasi yang Kakak pesan:\n\n`;
   }
@@ -758,13 +857,78 @@ export function generateAccessFulfillmentMessage(
     });
   }
 
-  order.items.forEach((item, idx) => {
+  let counter = 1;
+  order.items.forEach((item) => {
     const prod = productMap.get(item.name.trim().toLowerCase()) || productMap.get(String(item.id));
+    const isPkkmProduct = isItemPkkm(item) || isItemPkkm(prod || { name: '' });
+
+    // Kasus 1: Paket Bundling EduSuite + LKPD AI (ID 101)
+    if (item.id === 101 || (item.name || '').includes('EduSuite + LKPD AI')) {
+      text += `${counter++}. 🎓 *Aplikasi Pembuat RPP Guru (EduSuite AI)*\n`;
+      text += `   🔗 *Link Akses:* https://edusuite-ai.pages.dev/\n`;
+      text += `   💡 *Petunjuk Akses:* Buka web EduSuite AI lalu gunakan Google Gemini API Key pribadi untuk membuat RPP Kurikulum Merdeka otomatis tanpa batas.\n\n`;
+
+      text += `${counter++}. 🎓 *Prompt LKPD sekali beli untuk selamanya (LKPD AI)*\n`;
+      text += `   🔗 *Link Akses:* https://lkpd-ai.pages.dev/\n`;
+      text += `   💡 *Petunjuk Akses:* Akses seluruh kumpulan prompt LKPD interaktif dan materi gamifikasi pembelajaran.\n\n`;
+      return;
+    }
+
+    // Kasus 2: Paket Bundling PKKM + EduSuite (ID 102)
+    if (item.id === 102 || (item.name || '').includes('PKKM + EduSuite')) {
+      text += `${counter++}. 🎓 *PKKM Bikin Stres??? (Generator Bukti Fisik PKKM 2026 AI)*\n`;
+      text += `   🔗 *Link Aplikasi:* https://generator-pkkm.pages.dev/\n`;
+      text += `   🔐 *Akun Lisensi Akses Privat (1 Pembeli = 1 Akun Resmi):*\n`;
+      text += `   • Username: ${pkkmLic.username}\n`;
+      text += `   • Password: ${pkkmLic.password}\n`;
+      text += `   • Kode Lisensi: ${pkkmLic.licenseCode}\n`;
+      text += `   • Role Akses: ${pkkmLic.role}\n`;
+      text += `   • Status Akun: Aktif & Siap Digunakan\n`;
+      text += `   💡 *Cara Login:* Buka https://generator-pkkm.pages.dev/ lalu login menggunakan Username & Password di atas untuk akses penuh seluruh 205 instrumen dokumen PKKM & AI Generator.\n\n`;
+
+      text += `${counter++}. 🎓 *Aplikasi Pembuat RPP Guru (EduSuite AI)*\n`;
+      text += `   🔗 *Link Akses:* https://edusuite-ai.pages.dev/\n`;
+      text += `   💡 *Petunjuk Akses:* Buka web EduSuite AI lalu gunakan Google Gemini API Key pribadi untuk membuat RPP Kurikulum Merdeka otomatis.\n\n`;
+      return;
+    }
+
+    // Kasus 3: Produk PKKM tunggal
+    if (isPkkmProduct) {
+      text += `${counter++}. 🎓 *${item.name}* ${item.qty && item.qty > 1 ? `(${item.qty}x)` : ''}\n`;
+      text += `   🔗 *Link Aplikasi:* https://generator-pkkm.pages.dev/\n`;
+      text += `   🔐 *Akun Lisensi Akses Privat (1 Pembeli = 1 Akun Resmi):*\n`;
+      text += `   • Username: ${pkkmLic.username}\n`;
+      text += `   • Password: ${pkkmLic.password}\n`;
+      text += `   • Kode Lisensi: ${pkkmLic.licenseCode}\n`;
+      text += `   • Role Akses: ${pkkmLic.role}\n`;
+      text += `   • Status Akun: Aktif & Siap Digunakan\n`;
+      text += `   💡 *Cara Login:* Buka https://generator-pkkm.pages.dev/ lalu login menggunakan Username & Password di atas untuk akses penuh seluruh 205 instrumen dokumen PKKM & AI Generator.\n\n`;
+      return;
+    }
+
+    // Kasus 4: EduSuite AI
+    if (item.id === 2 || (item.name || '').toLowerCase().includes('edusuite') || (item.name || '').toLowerCase().includes('pembuat rpp')) {
+      text += `${counter++}. 🎓 *${item.name}* ${item.qty && item.qty > 1 ? `(${item.qty}x)` : ''}\n`;
+      text += `   🔗 *Link Akses:* https://edusuite-ai.pages.dev/\n`;
+      text += `   💡 *Petunjuk Akses:* Buka web EduSuite AI lalu masukkan Google Gemini API Key pribadi untuk mulai membuat RPP Kurikulum Merdeka otomatis.\n\n`;
+      return;
+    }
+
+    // Kasus 5: LKPD AI
+    if (item.id === 6 || (item.name || '').toLowerCase().includes('lkpd')) {
+      const link = item.accessLink || prod?.accessLink || 'https://lkpd-ai.pages.dev/';
+      text += `${counter++}. 🎓 *${item.name}* ${item.qty && item.qty > 1 ? `(${item.qty}x)` : ''}\n`;
+      text += `   🔗 *Link Akses:* ${link}\n`;
+      text += `   💡 *Petunjuk Akses:* Akses seluruh kumpulan prompt LKPD interaktif dan materi gamifikasi.\n\n`;
+      return;
+    }
+
+    // Kasus 6: Produk umum lainnya
     const directLink = item.accessLink || prod?.accessLink || '';
     const creds = item.accessCredentials || prod?.accessCredentials;
     const note = item.accessNote || prod?.accessNote;
 
-    text += `${idx + 1}. 🎓 *${item.name}* ${item.qty && item.qty > 1 ? `(${item.qty}x)` : ''}\n`;
+    text += `${counter++}. 🎓 *${item.name}* ${item.qty && item.qty > 1 ? `(${item.qty}x)` : ''}\n`;
     if (directLink) {
       text += `   🔗 *Link Akses:* ${directLink}\n`;
     } else {

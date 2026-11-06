@@ -197,25 +197,32 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                       Lebih Hemat
                     </span>
                   </div>
-                  <div className="text-[11px] text-stone-600">
-                    <strong className="text-stone-800 block">{RECOMMENDED_BUNDLES[0].title}</strong>
-                    <p className="text-[10px] text-stone-500 line-clamp-1">{RECOMMENDED_BUNDLES[0].description}</p>
-                    <div className="mt-1 flex items-center justify-between">
-                      <span className="font-brand font-bold text-[#D9574F] text-xs">
-                        {formatRupiah(RECOMMENDED_BUNDLES[0].bundlePrice)}{' '}
-                        <span className="text-[10px] text-stone-400 line-through">
-                          {formatRupiah(RECOMMENDED_BUNDLES[0].normalPrice)}
-                        </span>
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => onAddBundle(RECOMMENDED_BUNDLES[0].productIds)}
-                        className="cursor-pointer text-[10px] font-bold bg-[#8FA477] hover:bg-[#7b9165] text-white px-2.5 py-1 rounded-lg transition"
-                      >
-                        + Tambah Paket
-                      </button>
-                    </div>
-                  </div>
+                  {(() => {
+                    const bundleSuggest = cart.some((c) => c.id === 1 || c.id === 2) 
+                      ? (cart.some((c) => c.id === 1) ? RECOMMENDED_BUNDLES[1] : RECOMMENDED_BUNDLES[0])
+                      : RECOMMENDED_BUNDLES[0];
+                    return (
+                      <div className="text-[11px] text-stone-600">
+                        <strong className="text-stone-800 block">{bundleSuggest.title}</strong>
+                        <p className="text-[10px] text-stone-500 line-clamp-1">{bundleSuggest.description}</p>
+                        <div className="mt-1 flex items-center justify-between">
+                          <span className="font-brand font-bold text-[#D9574F] text-xs">
+                            {formatRupiah(bundleSuggest.bundlePrice)}{' '}
+                            <span className="text-[10px] text-stone-400 line-through">
+                              {formatRupiah(bundleSuggest.normalPrice)}
+                            </span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => onAddBundle(bundleSuggest.productIds)}
+                            className="cursor-pointer text-[10px] font-bold bg-[#8FA477] hover:bg-[#7b9165] text-white px-2.5 py-1 rounded-lg transition"
+                          >
+                            + Tambah Paket
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
             </>
