@@ -309,15 +309,8 @@ export default function App() {
         month: 'long',
         year: 'numeric'
       }),
-      createdAt: Date.now(),
       customer: customerInfo,
-      items: cart.map((item) => {
-        const prod = products.find((p) => p.id === item.id);
-        return {
-          ...item,
-          accessLink: item.accessLink || prod?.accessLink
-        };
-      }),
+      items: [...cart],
       subtotalAmount: finalDiscount.subtotal,
       discountAmount: finalDiscount.discountAmount,
       discountLabel: finalDiscount.discountLabel,
@@ -659,11 +652,6 @@ export default function App() {
         }
         onDelete={(id) => setOrders((prev) => prev.filter((o) => o.orderId !== id))}
         onOpenInvoice={(o) => setInvoiceOrder(o)}
-        products={products}
-        settings={storeSettings}
-        onUpdateOrder={(updated: CompletedOrder) =>
-          setOrders((prev) => prev.map((o) => (o.orderId === updated.orderId ? updated : o)))
-        }
       />
 
       {/* 8. WhatsApp Simulator & Store Settings Modal */}

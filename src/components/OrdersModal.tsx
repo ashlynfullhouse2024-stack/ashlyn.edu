@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, 
   FileText, 
@@ -24,7 +23,6 @@ import {
   formatRupiah, 
   cleanWaPhone, 
   generateAccessFulfillmentMessage, 
-  generateOrderStatusUpdateMessage,
   generatePendingReminderMessage, 
   isOrderPendingOver24Hours,
   getOrderAgeText,
@@ -59,7 +57,6 @@ export const OrdersModal: React.FC<Props> = ({
   const [statusFilter, setStatusFilter] = useState<'Semua' | OrderStatus>('Semua');
   const [showSheetsGuide, setShowSheetsGuide] = useState(false);
   const [previewOrder, setPreviewOrder] = useState<CompletedOrder | null>(null);
-  const [previewMode, setPreviewMode] = useState<'access' | 'status'>('access');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [sheetsUrl, setSheetsUrl] = useState(() => {
     return (typeof localStorage !== 'undefined' && localStorage.getItem('ashlyn_google_sheets_url')) || '';
@@ -92,6 +89,8 @@ export const OrdersModal: React.FC<Props> = ({
   const revenue = orders
     .filter((o) => !o.isQuestionOnly && o.status !== 'Dibatalkan')
     .reduce((s, o) => s + o.totalAmount, 0);
+
+  if (!isOpen) return null;
 
   const exportCsv = () => {
     const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
@@ -129,28 +128,9 @@ export const OrdersModal: React.FC<Props> = ({
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3">
-          {/* Backdrop with motion */}
-          <motion.div 
-            key="orders-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.24, ease: 'easeOut' }}
-            className="fixed inset-0 bg-stone-900/40 backdrop-blur-xs"
-            onClick={onClose}
-          />
-
-          <motion.div
-            key="orders-panel"
-            initial={{ opacity: 0, scale: 0.94, y: 16 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.94, y: 16 }}
-            transition={{ type: 'spring', damping: 26, stiffness: 320 }}
-            className="relative z-10 bg-white w-full max-w-3xl max-h-[92vh] rounded-3xl border-2 border-[#E9899F]/30 shadow-2xl flex flex-col overflow-hidden"
-          >
+    <div className="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center p-3">
+      <div className="fixed inset-0" onClick={onClose} />
+      <div className="relative z-10 bg-white w-full max-w-3xl max-h-[92vh] rounded-3xl border-2 border-[#E9899F]/30 shadow-2xl flex flex-col overflow-hidden">
         
         {/* Header */}
         <div className="p-4 border-b border-[#E9899F]/20 flex items-start justify-between gap-2 bg-[#FAF2E6]/60">
@@ -362,20 +342,9 @@ export const OrdersModal: React.FC<Props> = ({
 
                 {/* Items & Access Links */}
                 <div className="bg-[#FAF2E6]/60 p-2.5 rounded-xl border border-[#E9899F]/20 space-y-1.5">
-                  <div className="flex items-center justify-between text-[11px] font-semibold text-stone-700">
-                    <span>Item Dipesan:</span>
-                    {o.items.length > 1 && (
-                      <span className="text-[10px] bg-[#E9899F]/20 text-[#D9574F] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                        🎁 Paket Bundling ({o.items.length} Item)
-                      </span>
-                    )}
+                  <div className="text-[11px] font-semibold text-stone-700">
+                    Item Dipesan:
                   </div>
-                  {o.items.length > 1 && (
-                    <div className="text-[10px] text-emerald-800 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200 flex items-center gap-1.5 font-medium">
-                      <span>✓</span>
-                      <span>Paket Bundling: Seluruh {o.items.length} link materi akan otomatis terkirim sekaligus ke WhatsApp pembeli.</span>
-                    </div>
-                  )}
                   <div className="space-y-1">
                     {o.items.map((i, idx) => {
                       const link = i.accessLink || productAccessMap.get(i.name.trim().toLowerCase());
@@ -411,7 +380,7 @@ export const OrdersModal: React.FC<Props> = ({
                 <div className="flex items-center gap-2 flex-wrap pt-1 border-t border-stone-100">
                   {/* Status Dropdown */}
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[11px] text-stone-500 font-medium">Status:</span>
+                    <span className="text-[11px] text-stone-500">Status:</span>
                     <select 
                       value={o.status} 
                       onChange={(e) => onChangeStatus(o.orderId, e.target.value as OrderStatus)}
@@ -420,20 +389,6 @@ export const OrdersModal: React.FC<Props> = ({
                       {STATUSES.map((s) => <option key={s}>{s}</option>)}
                     </select>
                   </div>
-
-                  {/* Tombol Kirim Status ke WhatsApp */}
-                  <a
-                    href={`https://wa.me/${customerPhone}?text=${encodeURIComponent(
-                      generateOrderStatusUpdateMessage(o, o.status, products, settings)
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="cursor-pointer px-2.5 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white flex items-center gap-1.5 text-[11px] font-bold shadow-xs active:scale-95 transition"
-                    title={`Kirim update status '${o.status}' ke WhatsApp pelanggan`}
-                  >
-                    <Send className="w-3 h-3" />
-                    <span>Kirim Status</span>
-                  </a>
 
                   {/* Tombol Utama: Kirim Link Akses WA Otomatis */}
                   <a 
@@ -462,7 +417,7 @@ export const OrdersModal: React.FC<Props> = ({
                     ) : (
                       <>
                         <Copy className="w-3 h-3 text-stone-500" />
-                        <span>Salin Teks</span>
+                        <span>Salin Teks Akses</span>
                       </>
                     )}
                   </button>
@@ -514,120 +469,61 @@ export const OrdersModal: React.FC<Props> = ({
             );
           })}
         </div>
-      </motion.div>
+      </div>
 
       {/* Modal Pratinjau Teks Balasan WA */}
-      <AnimatePresence>
-        {previewOrder && (() => {
-          const isBundle = previewOrder.items.length > 1;
-          const currentMsg = previewMode === 'access'
-            ? generateAccessFulfillmentMessage(previewOrder, products, settings)
-            : generateOrderStatusUpdateMessage(previewOrder, previewOrder.status, products, settings);
-
-          return (
-            <div className="fixed inset-0 z-60 flex items-center justify-center p-3">
-              <motion.div
-                key="preview-backdrop"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
+      {previewOrder && (
+        <div className="fixed inset-0 z-60 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-3">
+          <div className="bg-white rounded-3xl p-5 max-w-lg w-full space-y-3 shadow-2xl border-2 border-[#E9899F]/30">
+            <div className="flex justify-between items-center border-b border-stone-200 pb-2">
+              <h4 className="font-brand font-bold text-[#D9574F] text-base flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#D9574F]" />
+                <span>Pratinjau Pesan Konfirmasi & Akses</span>
+              </h4>
+              <button 
                 onClick={() => setPreviewOrder(null)}
-                className="fixed inset-0 bg-stone-900/60 backdrop-blur-xs"
-              />
-              <motion.div
-                key="preview-panel"
-                initial={{ opacity: 0, scale: 0.95, y: 14 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 14 }}
-                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                className="relative z-10 bg-white rounded-3xl p-5 max-w-lg w-full space-y-3 shadow-2xl border-2 border-[#E9899F]/30"
+                className="cursor-pointer p-1 rounded-full hover:bg-stone-100 text-stone-500"
               >
-                <div className="flex justify-between items-center border-b border-stone-200 pb-2">
-                  <h4 className="font-brand font-bold text-[#D9574F] text-base flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-[#D9574F]" />
-                    <span>Pratinjau Pesan WhatsApp</span>
-                  </h4>
-                  <button 
-                    onClick={() => setPreviewOrder(null)}
-                    className="cursor-pointer p-1 rounded-full hover:bg-stone-100 text-stone-500"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Tabs Switcher: Link Akses vs Status Update */}
-                <div className="grid grid-cols-2 gap-1.5 bg-stone-100 p-1 rounded-xl text-xs font-bold">
-                  <button
-                    type="button"
-                    onClick={() => setPreviewMode('access')}
-                    className={`cursor-pointer py-1.5 px-2 rounded-lg transition text-center flex items-center justify-center gap-1.5 ${
-                      previewMode === 'access'
-                        ? 'bg-white text-[#D9574F] shadow-2xs font-extrabold'
-                        : 'text-stone-600 hover:text-stone-900'
-                    }`}
-                  >
-                    <span>🔑 Link Akses</span>
-                    {isBundle && (
-                      <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded-full font-bold">
-                        {previewOrder.items.length} Link
-                      </span>
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPreviewMode('status')}
-                    className={`cursor-pointer py-1.5 px-2 rounded-lg transition text-center flex items-center justify-center gap-1.5 ${
-                      previewMode === 'status'
-                        ? 'bg-white text-blue-700 shadow-2xs font-extrabold'
-                        : 'text-stone-600 hover:text-stone-900'
-                    }`}
-                  >
-                    <span>📢 Update Status ({previewOrder.status})</span>
-                  </button>
-                </div>
-
-                {previewMode === 'access' && isBundle && (
-                  <div className="text-[11px] text-emerald-900 bg-emerald-50 px-2.5 py-1.5 rounded-xl border border-emerald-200 flex items-center gap-1.5">
-                    <span className="text-sm">🎁</span>
-                    <span><strong>Paket Bundling:</strong> Semua {previewOrder.items.length} link materi digabung otomatis menjadi satu format balasan yang rapi dan siap kirim.</span>
-                  </div>
-                )}
-
-                <pre className="text-[11px] text-stone-800 font-mono whitespace-pre-wrap bg-[#FAF2E6] p-3 rounded-2xl border border-[#E9899F]/30 max-h-64 overflow-y-auto leading-relaxed custom-scrollbar">
-                  {currentMsg}
-                </pre>
-
-                <div className="flex items-center justify-end gap-2 pt-1">
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(currentMsg);
-                      setCopiedId(previewOrder.orderId);
-                      setTimeout(() => setCopiedId(null), 2000);
-                    }}
-                    className="cursor-pointer px-3 py-2 rounded-xl border border-stone-200 hover:bg-stone-50 font-bold text-xs text-stone-700 flex items-center gap-1.5"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>{copiedId === previewOrder.orderId ? '✓ Tersalin!' : 'Salin Teks'}</span>
-                  </button>
-
-                  <a
-                    href={`https://wa.me/${cleanWaPhone(previewOrder.customer.phone)}?text=${encodeURIComponent(currentMsg)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="cursor-pointer px-4 py-2 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs flex items-center gap-1.5 shadow-sm"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                    <span>Kirim ke WhatsApp</span>
-                  </a>
-                </div>
-              </motion.div>
+                <X className="w-4 h-4" />
+              </button>
             </div>
-          );
-        })()}
-      </AnimatePresence>
+
+            <p className="text-[11px] text-stone-500">
+              Pesan ini otomatis memuat nama pembeli, status lunas, dan tautan akses resmi khusus untuk produk yang dibeli:
+            </p>
+
+            <pre className="text-[11px] text-stone-800 font-mono whitespace-pre-wrap bg-[#FAF2E6] p-3 rounded-2xl border border-[#E9899F]/30 max-h-64 overflow-y-auto leading-relaxed custom-scrollbar">
+              {generateAccessFulfillmentMessage(previewOrder, products, settings)}
+            </pre>
+
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(generateAccessFulfillmentMessage(previewOrder, products, settings));
+                  setCopiedId(previewOrder.orderId);
+                  setTimeout(() => setCopiedId(null), 2000);
+                }}
+                className="cursor-pointer px-3 py-2 rounded-xl border border-stone-200 hover:bg-stone-50 font-bold text-xs text-stone-700 flex items-center gap-1.5"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                <span>Salin Teks</span>
+              </button>
+
+              <a
+                href={`https://wa.me/${cleanWaPhone(previewOrder.customer.phone)}?text=${encodeURIComponent(
+                  generateAccessFulfillmentMessage(previewOrder, products, settings)
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="cursor-pointer px-4 py-2 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs flex items-center gap-1.5 shadow-sm"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>Buka di WhatsApp</span>
+              </a>
+            </div>
+          </div>
         </div>
       )}
-    </AnimatePresence>
+    </div>
   );
 };

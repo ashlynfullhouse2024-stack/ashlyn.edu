@@ -1,38 +1,6 @@
-import { Product, StoreSettings, CompletedOrder, OrderStatus, PkkmLicenseAccount } from '../types';
+import { Product, StoreSettings } from '../types';
 
 export const INITIAL_PRODUCTS: Product[] = [
-  {
-    id: 101,
-    name: "Paket Bundling: EduSuite + LKPD AI",
-    category: "Aplikasi & Administrasi",
-    price: 119000,
-    originalPrice: 144000,
-    rating: 5.0,
-    reviews: 240,
-    image: "/assets/aistudio/02_aplikasi-pembuat-rpp-guru.webp",
-    description: "Kombinasi hemat 2 aplikasi unggulan: Pembuat RPP AI (EduSuite AI) + Prompt LKPD AI Sekali Beli untuk Selamanya.",
-    badge: "Paket Bundling",
-    curriculum: "EduSuite + LKPD AI",
-    inStock: true,
-    accessLink: "https://edusuite-ai.pages.dev/ dan https://lkpd-ai.pages.dev/",
-    accessNote: "Paket 2 Aplikasi: 1) EduSuite AI (https://edusuite-ai.pages.dev/) 2) Prompt LKPD AI (https://lkpd-ai.pages.dev/)"
-  },
-  {
-    id: 102,
-    name: "Paket Bundling: PKKM + EduSuite",
-    category: "Aplikasi & Administrasi",
-    price: 199000,
-    originalPrice: 248000,
-    rating: 5.0,
-    reviews: 380,
-    image: "/assets/aistudio/01_pkkm-bikin-stres.webp",
-    description: "Paket komplit super praktis: Generator Bukti Fisik PKKM 2026 AI (Lengkap 1 Akun Lisensi Privat) + Aplikasi RPP EduSuite AI.",
-    badge: "Paket Bundling",
-    curriculum: "PKKM + EduSuite AI",
-    inStock: true,
-    accessLink: "https://generator-pkkm.pages.dev/ dan https://edusuite-ai.pages.dev/",
-    accessNote: "Paket Komplit: 1) Generator PKKM + 1 Akun Lisensi Privat Guru/Kamad 2) EduSuite AI"
-  },
   {
     id: 1,
     name: "PKKM Bikin Stres???",
@@ -46,8 +14,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     badge: "Diskon Spesial",
     curriculum: "Administrasi Kepala Sekolah",
     inStock: true,
-    accessLink: "https://generator-pkkm.pages.dev/",
-    accessNote: "Setiap pembeli mendapatkan 1 Akun Lisensi Privat resmi (Username, Password & Kode Lisensi unik). Login di https://generator-pkkm.pages.dev/"
+    accessLink: "https://generator-pkkm.pages.dev/"
   },
   {
     id: 2,
@@ -160,7 +127,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: "Template Canva praktis untuk membantu menyiapkan kebutuhan mengajar.",
     badge: "Canva Siap Pakai",
     curriculum: "Canva Template",
-    inStock: true
+    inStock: true,
+    accessLink: "https://lynk.id/ashlyn_fullhouse/223528mqzx2o"
   },
   {
     id: 10,
@@ -174,7 +142,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: "Dashboard administrasi guru dengan desain pastel yang rapi dan menarik.",
     badge: "Aesthetic",
     curriculum: "Canva Template",
-    inStock: true
+    inStock: true,
+    accessLink: "https://lynk.id/ashlyn_fullhouse/223528mqzx2o"
   },
   {
     id: 11,
@@ -524,46 +493,6 @@ export const DEFAULT_STORE_SETTINGS = {
   includeBankInWa: true
 };
 
-// 📋 Daftar 10 Akun Lisensi Pembeli Resmi untuk Aplikasi PKKM 2026 AI
-// Sesuai instruksi: 1 akun unik untuk masing-masing pembeli (tidak tertukar)
-export const PKKM_LICENSE_ACCOUNTS: PkkmLicenseAccount[] = [
-  { no: 1, username: 'madrasah_juara01', password: 'MadrasahMaju#2026', role: 'Guru (205 Instrumen + AI)', licenseCode: 'LIC-PKKM-JR01-2026' },
-  { no: 2, username: 'pkkm_kemenag02', password: 'BerkahPanca*719', role: 'Guru (205 Instrumen + AI)', licenseCode: 'LIC-PKKM-KM02-2026' },
-  { no: 3, username: 'guru_prestasi03', password: 'CintaIlmu!8834', role: 'Guru (205 Instrumen + AI)', licenseCode: 'LIC-PKKM-GP03-2026' },
-  { no: 4, username: 'kamad_hebat04', password: 'AmanahKamad@452', role: 'Kamad (205 Instrumen + AI)', licenseCode: 'LIC-PKKM-KH04-2026' },
-  { no: 5, username: 'madrasah_unggul05', password: 'SuksesPKKM#916', role: 'Guru (205 Instrumen + AI)', licenseCode: 'LIC-PKKM-MU05-2026' },
-  { no: 6, username: 'tim_pkkm2026_06', password: 'PancaCinta$628', role: 'Guru (205 Instrumen + AI)', licenseCode: 'LIC-PKKM-TP06-2026' },
-  { no: 7, username: 'madrasah_bermutu07', password: 'KinerjaPenuh!351', role: 'Guru (205 Instrumen + AI)', licenseCode: 'LIC-PKKM-MB07-2026' },
-  { no: 8, username: 'guru_inovatif08', password: 'KBCMadrasah*742', role: 'Guru (205 Instrumen + AI)', licenseCode: 'LIC-PKKM-GI08-2026' },
-  { no: 9, username: 'asesmen_pkkm09', password: 'AkreditasiA@820', role: 'Guru (205 Instrumen + AI)', licenseCode: 'LIC-PKKM-AP09-2026' },
-  { no: 10, username: 'madrasah_teladan10', password: 'InsanMulia#539', role: 'Guru (205 Instrumen + AI)', licenseCode: 'LIC-PKKM-MT10-2026' },
-];
-
-// Alokasikan 1 akun lisensi unik untuk setiap pesanan PKKM
-export function allocatePkkmLicenseForOrder(existingOrders: CompletedOrder[] = []): PkkmLicenseAccount {
-  const usedUsernames = new Set<string>();
-  existingOrders.forEach((o) => {
-    if (o.assignedLicense?.username) {
-      usedUsernames.add(o.assignedLicense.username);
-    }
-  });
-
-  // Ambil akun yang belum terpakai pertama
-  const available = PKKM_LICENSE_ACCOUNTS.find((acc) => !usedUsernames.has(acc.username));
-  if (available) return available;
-
-  // Jika semua 10 lisensi sudah terpakai, putar secara sekuensial
-  const assignedCount = existingOrders.filter((o) => o.assignedLicense).length;
-  return PKKM_LICENSE_ACCOUNTS[assignedCount % PKKM_LICENSE_ACCOUNTS.length];
-}
-
-// Cek apakah item atau pesanan melibatkan aplikasi PKKM
-export function isItemPkkm(item: { id?: number; name?: string }): boolean {
-  if (item.id === 1 || item.id === 102) return true;
-  const lower = (item.name || '').toLowerCase();
-  return lower.includes('pkkm');
-}
-
 export const RECOMMENDED_BUNDLES: {
   id: string;
   title: string;
@@ -576,30 +505,41 @@ export const RECOMMENDED_BUNDLES: {
   emoji: string;
 }[] = [
   {
-    id: 'bundle-edusuite-lkpd',
-    title: 'EduSuite + LKPD AI',
-    tag: 'Hemat Rp 25rb 🔥',
-    description: 'Aplikasi Pembuat RPP Guru (EduSuite AI) + Prompt LKPD AI Sekali Beli untuk Selamanya',
-    productIds: [2, 6],
-    normalPrice: 144000,
-    bundlePrice: 119000,
-    savingAmount: 25000,
-    emoji: '⚡'
+    id: 'bundle-guru-ai',
+    title: 'Paket Komplit Guru AI',
+    tag: 'Paling Laris 🔥',
+    description: 'RPP Generator All-In + LKPD Gamification AI + Asisten Guru Pintar',
+    productIds: [11, 4, 5],
+    normalPrice: 203000,
+    bundlePrice: 165000,
+    savingAmount: 38000,
+    emoji: '🤖'
   },
   {
-    id: 'bundle-pkkm-edusuite',
-    title: 'PKKM + EduSuite',
-    tag: 'Paling Komplit 👑',
-    description: 'Generator Bukti Fisik PKKM 2026 AI (Lengkap 1 Akun Lisensi Privat) + Aplikasi RPP EduSuite AI',
-    productIds: [1, 2],
-    normalPrice: 248000,
-    bundlePrice: 199000,
-    savingAmount: 49000,
-    emoji: '🏆'
+    id: 'bundle-canva-aesthetic',
+    title: 'Paket Canva Administrasi Pastel',
+    tag: 'Hemat Rp 15rb 🌸',
+    description: 'Teacher Dashboard Canva + Jurnal Guru Editable + Twibbon Back to School',
+    productIds: [10, 13, 35],
+    normalPrice: 60000,
+    bundlePrice: 45000,
+    savingAmount: 15000,
+    emoji: '🎨'
+  },
+  {
+    id: 'bundle-literasi-bahasa',
+    title: 'Paket Literasi & Bahasa Inggris',
+    tag: 'Diskon Spesial 📚',
+    description: 'Alphabet Workbook + Tracing Huruf + Subject To Be & Pronouns',
+    productIds: [24, 26, 25],
+    normalPrice: 50000,
+    bundlePrice: 39000,
+    savingAmount: 11000,
+    emoji: '✏️'
   }
 ];
 
-export function calculateBundlingDiscount(cart: { id?: number; price: number; qty?: number; name?: string }[]): {
+export function calculateBundlingDiscount(cart: { price: number; qty?: number }[]): {
   subtotal: number;
   discountAmount: number;
   discountPercent: number;
@@ -608,36 +548,6 @@ export function calculateBundlingDiscount(cart: { id?: number; price: number; qt
   total: number;
 } {
   const subtotal = cart.reduce((sum, item) => sum + item.price * (item.qty || 1), 0);
-  const cartIds = new Set(cart.map((c) => c.id));
-
-  // Cek kombinasi bundling khusus yang diminta:
-  // 1. PKKM (ID 1) + EduSuite (ID 2): Diskon Rp 49.000 (Harga jadi Rp 199.000)
-  const hasPkkmAndEduSuite = (cartIds.has(1) && cartIds.has(2)) || cartIds.has(102);
-  // 2. EduSuite (ID 2) + LKPD AI (ID 6): Diskon Rp 25.000 (Harga jadi Rp 119.000)
-  const hasEduSuiteAndLkpd = (cartIds.has(2) && cartIds.has(6)) || cartIds.has(101);
-
-  if (hasPkkmAndEduSuite && cart.length === 2 && !cartIds.has(102)) {
-    return {
-      subtotal,
-      discountAmount: 49000,
-      discountPercent: 20,
-      discountLabel: 'Paket Bundling Spesial (PKKM + EduSuite: Hemat Rp 49.000)',
-      nextTierMessage: '🎉 Kamu mendapatkan harga bundling spesial PKKM + EduSuite!',
-      total: Math.max(0, subtotal - 49000)
-    };
-  }
-
-  if (hasEduSuiteAndLkpd && cart.length === 2 && !cartIds.has(101)) {
-    return {
-      subtotal,
-      discountAmount: 25000,
-      discountPercent: 17,
-      discountLabel: 'Paket Bundling Spesial (EduSuite + LKPD AI: Hemat Rp 25.000)',
-      nextTierMessage: '⚡ Kamu mendapatkan harga bundling spesial EduSuite + LKPD AI!',
-      total: Math.max(0, subtotal - 25000)
-    };
-  }
-
   const totalPaidItems = cart
     .filter((item) => item.price > 0)
     .reduce((sum, item) => sum + (item.qty || 1), 0);
@@ -769,278 +679,4 @@ export function generateWaOrderText(
 export function fixImg(src: string): string {
   const base = import.meta.env.BASE_URL || '/';
   return src.startsWith('/assets/') && base !== '/' ? base + src.slice(1) : src;
-}
-
-// Parse order timestamp from createdAt or localized Indonesian date
-export function parseOrderTimestamp(order: CompletedOrder): number {
-  if (order.createdAt && !isNaN(order.createdAt)) {
-    return order.createdAt;
-  }
-  const standardParse = Date.parse(order.date);
-  if (!isNaN(standardParse)) {
-    return standardParse;
-  }
-  const monthsMap: Record<string, number> = {
-    januari: 0, februari: 1, maret: 2, april: 3, mei: 4, juni: 5,
-    juli: 6, agustus: 7, september: 8, oktober: 9, november: 10, desember: 11
-  };
-  const parts = order.date.toLowerCase().split(/\s+/);
-  if (parts.length >= 3) {
-    const day = parseInt(parts[0], 10);
-    const month = monthsMap[parts[1]];
-    const year = parseInt(parts[2], 10);
-    if (!isNaN(day) && month !== undefined && !isNaN(year)) {
-      return new Date(year, month, day, 12, 0, 0).getTime();
-    }
-  }
-  return Date.now() - 25 * 3600 * 1000;
-}
-
-// Cek apakah pesanan masih berstatus 'Menunggu Konfirmasi' dan usianya > 24 jam
-export function isOrderPendingOver24Hours(order: CompletedOrder): boolean {
-  if (order.status !== 'Menunggu Konfirmasi' || order.isQuestionOnly) return false;
-  const time = parseOrderTimestamp(order);
-  const diffHours = (Date.now() - time) / (1000 * 60 * 60);
-  return diffHours >= 24;
-}
-
-// Menampilkan durasi usia pesanan secara manusiawi
-export function getOrderAgeText(order: CompletedOrder): string {
-  const time = parseOrderTimestamp(order);
-  const diffMs = Date.now() - time;
-  if (diffMs < 0) return 'Baru saja';
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  if (diffHours < 1) {
-    const diffMins = Math.max(1, Math.floor(diffMs / (1000 * 60)));
-    return `${diffMins} mnt lalu`;
-  }
-  if (diffHours < 24) {
-    return `${diffHours} jam lalu`;
-  }
-  const diffDays = Math.floor(diffHours / 24);
-  return `${diffDays} hari lalu (${diffHours} jam)`;
-}
-
-// Membuat pesan WhatsApp konfirmasi pembayaran + link akses materi otomatis (Mendukung Produk Tunggal & Paket Bundling)
-export function generateAccessFulfillmentMessage(
-  order: CompletedOrder,
-  catalog?: Product[],
-  settings?: StoreSettings
-): string {
-  const storeName = settings?.storeName || 'Ashlyn Edu';
-  const hasMultipleItems = order.items.length > 1;
-  const isBundleItem = order.items.some(
-    (i) => i.id === 101 || i.id === 102 || (i.name || '').toLowerCase().includes('bundling')
-  );
-  const isBundle = hasMultipleItems || isBundleItem;
-
-  // Akun lisensi PKKM yang dialokasikan khusus untuk pembeli ini
-  const pkkmLic = order.assignedLicense || allocatePkkmLicenseForOrder([order]);
-
-  let text = `🌸 *KONFIRMASI PEMBAYARAN & LINK AKSES RESMI* 🌸\n`;
-  text += `━━━━━━━━━━━━━━━━━━━━━\n`;
-  text += `Halo Kak *${order.customer.name}*! Terima kasih banyak atas pembayarannya. 🙏\n`;
-  text += `Pesanan *${order.orderId}* telah kami konfirmasi dan BERHASIL DITERIMA. ✅\n\n`;
-
-  if (isBundle) {
-    text += `🎁 *PAKET BUNDLING MATERI & APLIKASI DIGITAL*\n`;
-    text += `Berikut adalah seluruh link akses resmi dan akun lisensi pesanan Kakak:\n\n`;
-  } else {
-    text += `Berikut adalah tautan / link akses resmi materi & aplikasi yang Kakak pesan:\n\n`;
-  }
-
-  const productMap = new Map<string, Product>();
-  if (catalog) {
-    catalog.forEach((p) => {
-      productMap.set(p.name.trim().toLowerCase(), p);
-      productMap.set(String(p.id), p);
-    });
-  }
-
-  let counter = 1;
-  order.items.forEach((item) => {
-    const prod = productMap.get(item.name.trim().toLowerCase()) || productMap.get(String(item.id));
-    const isPkkmProduct = isItemPkkm(item) || isItemPkkm(prod || { name: '' });
-
-    // Kasus 1: Paket Bundling EduSuite + LKPD AI (ID 101)
-    if (item.id === 101 || (item.name || '').includes('EduSuite + LKPD AI')) {
-      text += `${counter++}. 🎓 *Aplikasi Pembuat RPP Guru (EduSuite AI)*\n`;
-      text += `   🔗 *Link Akses:* https://edusuite-ai.pages.dev/\n`;
-      text += `   💡 *Petunjuk Akses:* Buka web EduSuite AI lalu gunakan Google Gemini API Key pribadi untuk membuat RPP Kurikulum Merdeka otomatis tanpa batas.\n\n`;
-
-      text += `${counter++}. 🎓 *Prompt LKPD sekali beli untuk selamanya (LKPD AI)*\n`;
-      text += `   🔗 *Link Akses:* https://lkpd-ai.pages.dev/\n`;
-      text += `   💡 *Petunjuk Akses:* Akses seluruh kumpulan prompt LKPD interaktif dan materi gamifikasi pembelajaran.\n\n`;
-      return;
-    }
-
-    // Kasus 2: Paket Bundling PKKM + EduSuite (ID 102)
-    if (item.id === 102 || (item.name || '').includes('PKKM + EduSuite')) {
-      text += `${counter++}. 🎓 *PKKM Bikin Stres??? (Generator Bukti Fisik PKKM 2026 AI)*\n`;
-      text += `   🔗 *Link Aplikasi:* https://generator-pkkm.pages.dev/\n`;
-      text += `   🔐 *Akun Lisensi Akses Privat (1 Pembeli = 1 Akun Resmi):*\n`;
-      text += `   • Username: ${pkkmLic.username}\n`;
-      text += `   • Password: ${pkkmLic.password}\n`;
-      text += `   • Kode Lisensi: ${pkkmLic.licenseCode}\n`;
-      text += `   • Role Akses: ${pkkmLic.role}\n`;
-      text += `   • Status Akun: Aktif & Siap Digunakan\n`;
-      text += `   💡 *Cara Login:* Buka https://generator-pkkm.pages.dev/ lalu login menggunakan Username & Password di atas untuk akses penuh seluruh 205 instrumen dokumen PKKM & AI Generator.\n\n`;
-
-      text += `${counter++}. 🎓 *Aplikasi Pembuat RPP Guru (EduSuite AI)*\n`;
-      text += `   🔗 *Link Akses:* https://edusuite-ai.pages.dev/\n`;
-      text += `   💡 *Petunjuk Akses:* Buka web EduSuite AI lalu gunakan Google Gemini API Key pribadi untuk membuat RPP Kurikulum Merdeka otomatis.\n\n`;
-      return;
-    }
-
-    // Kasus 3: Produk PKKM tunggal
-    if (isPkkmProduct) {
-      text += `${counter++}. 🎓 *${item.name}* ${item.qty && item.qty > 1 ? `(${item.qty}x)` : ''}\n`;
-      text += `   🔗 *Link Aplikasi:* https://generator-pkkm.pages.dev/\n`;
-      text += `   🔐 *Akun Lisensi Akses Privat (1 Pembeli = 1 Akun Resmi):*\n`;
-      text += `   • Username: ${pkkmLic.username}\n`;
-      text += `   • Password: ${pkkmLic.password}\n`;
-      text += `   • Kode Lisensi: ${pkkmLic.licenseCode}\n`;
-      text += `   • Role Akses: ${pkkmLic.role}\n`;
-      text += `   • Status Akun: Aktif & Siap Digunakan\n`;
-      text += `   💡 *Cara Login:* Buka https://generator-pkkm.pages.dev/ lalu login menggunakan Username & Password di atas untuk akses penuh seluruh 205 instrumen dokumen PKKM & AI Generator.\n\n`;
-      return;
-    }
-
-    // Kasus 4: EduSuite AI
-    if (item.id === 2 || (item.name || '').toLowerCase().includes('edusuite') || (item.name || '').toLowerCase().includes('pembuat rpp')) {
-      text += `${counter++}. 🎓 *${item.name}* ${item.qty && item.qty > 1 ? `(${item.qty}x)` : ''}\n`;
-      text += `   🔗 *Link Akses:* https://edusuite-ai.pages.dev/\n`;
-      text += `   💡 *Petunjuk Akses:* Buka web EduSuite AI lalu masukkan Google Gemini API Key pribadi untuk mulai membuat RPP Kurikulum Merdeka otomatis.\n\n`;
-      return;
-    }
-
-    // Kasus 5: LKPD AI
-    if (item.id === 6 || (item.name || '').toLowerCase().includes('lkpd')) {
-      const link = item.accessLink || prod?.accessLink || 'https://lkpd-ai.pages.dev/';
-      text += `${counter++}. 🎓 *${item.name}* ${item.qty && item.qty > 1 ? `(${item.qty}x)` : ''}\n`;
-      text += `   🔗 *Link Akses:* ${link}\n`;
-      text += `   💡 *Petunjuk Akses:* Akses seluruh kumpulan prompt LKPD interaktif dan materi gamifikasi.\n\n`;
-      return;
-    }
-
-    // Kasus 6: Produk umum lainnya
-    const directLink = item.accessLink || prod?.accessLink || '';
-    const creds = item.accessCredentials || prod?.accessCredentials;
-    const note = item.accessNote || prod?.accessNote;
-
-    text += `${counter++}. 🎓 *${item.name}* ${item.qty && item.qty > 1 ? `(${item.qty}x)` : ''}\n`;
-    if (directLink) {
-      text += `   🔗 *Link Akses:* ${directLink}\n`;
-    } else {
-      text += `   🔗 *Link Akses:* (File template/materi dikirimkan langsung melalui chat ini)\n`;
-    }
-    if (creds?.username) {
-      text += `   👤 *Username:* ${creds.username}\n`;
-    }
-    if (creds?.password) {
-      text += `   🔑 *Password:* ${creds.password}\n`;
-    }
-    if (note || creds?.notes) {
-      text += `   💡 *Petunjuk Akses:* ${note || creds?.notes}\n`;
-    }
-    text += `\n`;
-  });
-
-  text += `━━━━━━━━━━━━━━━━━━━━━\n`;
-  text += `📌 *Panduan Penggunaan:*
-• Simpan atau bookmark link di atas pada browser Kakak agar mudah diakses kapan saja.
-• Untuk template Canva, pastikan sudah masuk (login) ke Canva sebelum membuka template.
-• Jika ada pertanyaan atau kendala teknis dalam mengakses materi, silakan langsung balas pesan ini.
-
-Selamat berkarya & sukses selalu untuk kegiatan mengajarnya! ✨🎓
-— Salam hangat, *${storeName}*`;
-
-  return text;
-}
-
-// Menghasilkan teks WhatsApp untuk update status pesanan spesifik (Diproses, Dikirim, Selesai, dll)
-export function generateOrderStatusUpdateMessage(
-  order: CompletedOrder,
-  status: OrderStatus,
-  catalog?: Product[],
-  settings?: StoreSettings
-): string {
-  const storeName = settings?.storeName || 'Ashlyn Edu';
-  const isBundle = order.items.length > 1;
-
-  if (status === 'Selesai' || status === 'Dikirim') {
-    return generateAccessFulfillmentMessage(order, catalog, settings);
-  }
-
-  if (status === 'Diproses') {
-    let text = `🌸 *UPDATE STATUS: PESANAN SEDANG DIPROSES* 🌸\n`;
-    text += `━━━━━━━━━━━━━━━━━━━━━\n`;
-    text += `Halo Kak *${order.customer.name}*! Salam dari ${storeName}. 😊\n\n`;
-    text += `Kami menginformasikan bahwa pembayaran untuk pesanan Kakak telah kami verifikasi:\n`;
-    text += `📋 *No. Pesanan:* ${order.orderId}\n`;
-    text += `📅 *Tanggal:* ${order.date}\n`;
-    text += `🛍️ *Item Pesanan:* ${isBundle ? `(Paket Bundling ${order.items.length} Item)` : ''}\n`;
-    order.items.forEach((item, idx) => {
-      text += `   ${idx + 1}. ${item.name} (${item.qty}x)\n`;
-    });
-    text += `💰 *Total Pembayaran:* ${formatRupiah(order.totalAmount)}\n`;
-    text += `━━━━━━━━━━━━━━━━━━━━━\n`;
-    text += `Status saat ini: ⚙️ *SEDANG DIPROSES / DISIAPKAN*\n\n`;
-    text += `Tim kami sedang menyiapkan hak akses dan materi pesanan Kakak. Link akses resmi akan segera kami kirimkan ke chat WhatsApp ini dalam beberapa saat lagi.\n\n`;
-    text += `Mohon ditunggu sebentar ya Kak. Terima kasih banyak atas kesabarannya! 🌸✨\n`;
-    text += `— *${storeName}*`;
-    return text;
-  }
-
-  if (status === 'Dibatalkan') {
-    let text = `🌸 *PEMBERITAHUAN PEMBATALAN PESANAN* 🌸\n`;
-    text += `━━━━━━━━━━━━━━━━━━━━━\n`;
-    text += `Halo Kak *${order.customer.name}*,\n\n`;
-    text += `Pemberitahuan bahwa pesanan Kakak:\n`;
-    text += `📋 *No. Pesanan:* ${order.orderId}\n`;
-    text += `🛍️ *Item:* ${order.items.map((i) => i.name).join(', ')}\n`;
-    text += `Status saat ini telah diubah menjadi: ❌ *DIBATALKAN*\n\n`;
-    text += `Jika pembatalan ini tidak disengaja atau Kakak masih ingin melanjutkan pemesanan, silakan balas pesan ini agar tim kami dapat membantu Kakak kembali.\n\n`;
-    text += `Terima kasih! 🙏\n— *${storeName}*`;
-    return text;
-  }
-
-  // Fallback: Menunggu Konfirmasi
-  return generatePendingReminderMessage(order, settings);
-}
-
-// Membuat pesan pengingat sopan ke pelanggan untuk pesanan 'Menunggu Konfirmasi' > 24 jam
-export function generatePendingReminderMessage(
-  order: CompletedOrder,
-  settings?: StoreSettings
-): string {
-  const storeName = settings?.storeName || 'Ashlyn Edu';
-  let text = `🌸 *PENGINGAT PESANAN DIGITAL - ${storeName.toUpperCase()}* 🌸\n`;
-  text += `━━━━━━━━━━━━━━━━━━━━━\n`;
-  text += `Halo Kak *${order.customer.name}*! Salam dari ${storeName}. 😊\n\n`;
-  text += `Kami ingin mengonfirmasi pesanan materi ajar digital yang Kakak buat sebelumnya:\n`;
-  text += `📋 *No. Pesanan:* ${order.orderId}\n`;
-  text += `📅 *Tanggal:* ${order.date}\n`;
-  text += `🛍️ *Item Pesanan:*\n`;
-  order.items.forEach((item, idx) => {
-    text += `   ${idx + 1}. ${item.name} (${item.qty}x)\n`;
-  });
-  text += `💰 *Total Pembayaran:* ${formatRupiah(order.totalAmount)}\n`;
-  text += `💳 *Metode Pembayaran:* ${order.customer.paymentMethod}\n`;
-
-  if (settings?.includeBankInWa && settings.bankAccounts?.length) {
-    text += `\n*Rekening Pembayaran:*\n`;
-    settings.bankAccounts.forEach((b) => {
-      text += `• ${b.bankName}: *${b.accountNumber}* (a.n. ${b.accountHolder})\n`;
-    });
-  }
-
-  text += `\n━━━━━━━━━━━━━━━━━━━━━\n`;
-  text += `Saat ini status pesanan masih *Menunggu Konfirmasi Pembayaran* (lebih dari 24 jam).\n\n`;
-  text += `Apakah ada kendala saat transfer atau ada detail materi yang ingin ditanyakan terlebih dahulu, Kak?\n\n`;
-  text += `Jika Kakak *sudah melakukan transfer*, mohon cukup kirimkan foto/tangkapan layar *bukti transfer* di chat ini agar kami bisa segera mengaktifkan & mengirimkan link akses materinya. 🚀\n\n`;
-  text += `Terima kasih banyak, Kak! Semoga hari Kakak menyenangkan. 🌸✨\n`;
-  text += `— *${storeName}*`;
-
-  return text;
 }
