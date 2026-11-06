@@ -40,16 +40,28 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
   if (!isOpen) return null;
 
   const sampleOrder = {
-    orderId: 'ASH-2026-9041',
+    orderId: 'ASH-261105-PKKM',
     date: 'Hari ini',
     items: [
-      { name: 'Modul Ajar Tematik Kreatif', qty: 1, price: 50000 }
+      {
+        id: 1,
+        name: 'PKKM Bikin Stres???',
+        qty: 1,
+        price: 149000,
+        accessLink: 'https://generator-pkkm.pages.dev/'
+      }
     ],
-    totalAmount: 50000,
+    totalAmount: 149000,
+    assignedLicense: {
+      username: 'madrasah_juara01',
+      password: 'MadrasahMaju#2026',
+      licenseCode: 'PKKM-01',
+      productName: 'PKKM Bikin Stres???'
+    },
     customer: {
       name: 'Ibu Rahmawati',
       phone: '081234567890',
-      paymentMethod: 'Transfer Bank (BCA)',
+      paymentMethod: 'BCA 4970394007 (Anis Purwaningsih)',
       isQuestionOnly: false
     }
   };
@@ -74,7 +86,7 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
     const newBank: BankAccount = {
       bankName: 'BCA',
       accountNumber: '',
-      accountHolder: currentSettings.storeName
+      accountHolder: 'Anis Purwaningsih'
     };
     setCurrentSettings({
       ...currentSettings,

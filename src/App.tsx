@@ -9,13 +9,15 @@ import {
   Check,
   Settings,
   MessageSquare,
-  ClipboardList
+  ClipboardList,
+  AlertTriangle,
+  Key
 } from 'lucide-react';
 import { Product, CartItem, ProductCategory, OrderCustomerInfo, CompletedOrder, StoreSettings, OrderStatus } from './types';
 import { hasAdminSession, clearAdminSession } from './lib/adminAuth';
 import { sendOrderToGoogleSheets } from './lib/googleSheets';
 import { OrdersModal } from './components/OrdersModal';
-import { INITIAL_PRODUCTS, CATEGORIES, formatRupiah, DEFAULT_STORE_SETTINGS, calculateBundlingDiscount, cleanWaPhone, generateWaOrderText, fixImg } from './data/initialProducts';
+import { INITIAL_PRODUCTS, CATEGORIES, formatRupiah, DEFAULT_STORE_SETTINGS, calculateBundlingDiscount, cleanWaPhone, generateWaOrderText, fixImg, getPkkmLicenseSummary, isPkkmItem } from './data/initialProducts';
 import { Navbar } from './components/Navbar';
 import { HeroBanner } from './components/HeroBanner';
 import { BundlingShowcase } from './components/BundlingShowcase';
@@ -35,7 +37,7 @@ export default function App() {
   // Products state with localStorage persistence (merging latest accessLink from INITIAL_PRODUCTS)
   const [products, setProducts] = useState<Product[]>(() => {
     const initialMap = new Map(INITIAL_PRODUCTS.map((p) => [p.id, p]));
-    const saved = localStorage.getItem('ashlyn_edu_products_v4_images');
+    const saved = localStorage.getItem('ashlyn_edu_products_v5_14_curated');
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as Product[];
@@ -54,12 +56,14 @@ export default function App() {
     return INITIAL_PRODUCTS.map((p) => ({ ...p, image: fixImg(p.image) }));
   });
 
-  // Cart state with localStorage persistence
+  // Cart state with localStorage persistence (filtered against current catalog)
   const [cart, setCart] = useState<CartItem[]>(() => {
+    const validIds = new Set(INITIAL_PRODUCTS.map((p) => p.id));
     const saved = localStorage.getItem('ashlyn_bloom_cart');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved) as CartItem[];
+        return parsed.filter((item) => validIds.has(item.id));
       } catch (e) {
         return [];
       }
@@ -96,7 +100,7 @@ export default function App() {
 
   // Store Settings (WhatsApp number, bank accounts, template)
   const [storeSettings, setStoreSettings] = useState<StoreSettings>(() => {
-    const saved = localStorage.getItem('ashlyn_edu_store_settings_v3');
+    const saved = localStorage.getItem('ashlyn_edu_store_settings_v4');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -111,6 +115,19 @@ export default function App() {
     return DEFAULT_STORE_SETTINGS;
   });
 
+  const pkkmSummary = useMemo(() => getPkkmLicenseSummary(orders), [orders]);
+
+  // Automatically mark PKKM product out of stock when all 10 licenses are exhausted
+  useEffect(() => {
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === 1 && p.inStock === pkkmSummary.isExhausted
+          ? { ...p, inStock: !pkkmSummary.isExhausted }
+          : p
+      )
+    );
+  }, [pkkmSummary.isExhausted]);
+
   // Toast feedback state
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -123,7 +140,7 @@ export default function App() {
 
   // Sync products to localStorage
   useEffect(() => {
-    localStorage.setItem('ashlyn_edu_products_v4_images', JSON.stringify(products));
+    localStorage.setItem('ashlyn_edu_products_v5_14_curated', JSON.stringify(products));
   }, [products]);
 
   useEffect(() => {
@@ -263,13 +280,13 @@ export default function App() {
   const handleResetCatalog = () => {
     if (window.confirm('Kembalikan semua produk ke katalog awal?')) {
       setProducts(INITIAL_PRODUCTS);
-      localStorage.setItem('ashlyn_edu_products_v4_images', JSON.stringify(INITIAL_PRODUCTS));
+      localStorage.setItem('ashlyn_edu_products_v5_14_curated', JSON.stringify(INITIAL_PRODUCTS));
       showToast('Katalog di-reset ke awal.');
     }
   };
 
   const handleAddBundle = (productIds: number[], title: string) => {
-    const productsToAdd = products.filter((p) => productIds.includes(p.id));
+    const productsToAdd = products.filter((p) => productIds.includes(p.id) && p.inStock !== false);
     if (productsToAdd.length === 0) return;
 
     setCart((prev) => {
@@ -285,11 +302,11 @@ export default function App() {
       return updated;
     });
 
-    showToast(`🍓 ${title} masuk ke keranjang!`);
+    showToast(`🌺 ${title} masuk ke keranjang!`);
     setIsCartOpen(true);
   };
 
-  // Order Submission with Discount Support
+  // Order Submission with Discount Support & 1-Buyer-1-License PKKM Assignment
   const handleSubmitOrder = (
     customerInfo: OrderCustomerInfo,
     discountData?: ReturnType<typeof calculateBundlingDiscount>
@@ -302,6 +319,18 @@ export default function App() {
       newOrderId = `ASH-${stamp}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
     } while (existingIds.has(newOrderId));
     const finalDiscount = discountData || calculateBundlingDiscount(cart);
+
+    const hasPkkmInCart = !customerInfo.isQuestionOnly && cart.some((item) => isPkkmItem(item));
+    const assignedLicense =
+      hasPkkmInCart && pkkmSummary.nextAvailable
+        ? {
+            username: pkkmSummary.nextAvailable.username,
+            password: pkkmSummary.nextAvailable.password,
+            licenseCode: `PKKM-${String(pkkmSummary.nextAvailable.no).padStart(2, '0')}`,
+            productName: 'PKKM Bikin Stres???'
+          }
+        : undefined;
+
     const newOrder: CompletedOrder = {
       orderId: newOrderId,
       date: new Date().toLocaleDateString('id-ID', {
@@ -309,6 +338,7 @@ export default function App() {
         month: 'long',
         year: 'numeric'
       }),
+      createdAt: Date.now(),
       customer: customerInfo,
       items: [...cart],
       subtotalAmount: finalDiscount.subtotal,
@@ -316,7 +346,8 @@ export default function App() {
       discountLabel: finalDiscount.discountLabel,
       totalAmount: finalDiscount.total,
       status: 'Menunggu Konfirmasi',
-      isQuestionOnly: customerInfo.isQuestionOnly
+      isQuestionOnly: customerInfo.isQuestionOnly,
+      assignedLicense
     };
 
     setOrders((prev) => [newOrder, ...prev]);
@@ -441,6 +472,45 @@ export default function App() {
         {/* Admin Quick Action Card (Tampil saat Admin Aktif) */}
         {isAdmin && (
           <div className="mb-4 bg-white rounded-3xl border-2 border-[#8FA477]/50 p-4 shadow-sm space-y-3 retro-box">
+            {pkkmSummary.isExhausted ? (
+              <div className="bg-red-50 border-2 border-red-400 rounded-2xl p-3 text-xs text-red-900 flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 animate-bounce" />
+                  <div>
+                    <strong className="font-bold block text-red-700 text-sm">
+                      ⚠️ PERINGATAN STOK HABIS: Akun Lisensi Aplikasi PKKM (0/{pkkmSummary.total} Tersisa)
+                    </strong>
+                    <span>
+                      Seluruh 10 username & password lisensi PKKM telah terpakai oleh pembeli. Produk <strong>"PKKM Bikin Stres???"</strong> otomatis ditandai <em>Stok Habis</em>.
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsOrdersOpen(true)}
+                  className="cursor-pointer bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs shrink-0"
+                >
+                  Lihat Pemakai Lisensi
+                </button>
+              </div>
+            ) : (
+              <div className="bg-[#FAF2E6] border border-[#E9899F]/40 rounded-2xl p-2.5 text-xs text-stone-700 flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Key className="w-4 h-4 text-[#D9574F] shrink-0" />
+                  <span>
+                    <strong>Stok Lisensi Aplikasi PKKM:</strong> Tersedia <strong className="text-emerald-700">{pkkmSummary.remainingCount} dari {pkkmSummary.total} akun</strong> (1 pembeli = 1 username & password otomatis saat konfirmasi pembayaran).
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsOrdersOpen(true)}
+                  className="cursor-pointer text-[11px] font-bold text-[#D9574F] hover:underline"
+                >
+                  Cek Daftar 10 Akun →
+                </button>
+              </div>
+            )}
+
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-[#8FA477]/20 text-[#4d5e3c] flex items-center justify-center font-bold">
@@ -608,6 +678,7 @@ export default function App() {
           setIsCartOpen(true);
         }}
         cart={cart}
+        settings={storeSettings}
         onSubmitOrder={handleSubmitOrder}
       />
 
@@ -650,8 +721,13 @@ export default function App() {
         onChangeStatus={(id, status: OrderStatus) =>
           setOrders((prev) => prev.map((o) => (o.orderId === id ? { ...o, status } : o)))
         }
+        onUpdateOrder={(updatedOrder) =>
+          setOrders((prev) => prev.map((o) => (o.orderId === updatedOrder.orderId ? updatedOrder : o)))
+        }
         onDelete={(id) => setOrders((prev) => prev.filter((o) => o.orderId !== id))}
         onOpenInvoice={(o) => setInvoiceOrder(o)}
+        products={products}
+        settings={storeSettings}
       />
 
       {/* 8. WhatsApp Simulator & Store Settings Modal */}
@@ -661,7 +737,7 @@ export default function App() {
         settings={storeSettings}
         onSaveSettings={(newSettings) => {
           setStoreSettings(newSettings);
-          localStorage.setItem('ashlyn_edu_store_settings_v3', JSON.stringify(newSettings));
+          localStorage.setItem('ashlyn_edu_store_settings_v4', JSON.stringify(newSettings));
           showToast('🌸 Pengaturan WhatsApp & Bank berhasil disimpan!');
         }}
       />

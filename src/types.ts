@@ -52,6 +52,8 @@ export interface BundlePackage {
   tag: string;
   description: string;
   productIds: number[];
+  itemsIncluded?: string[];
+  highlightBadge?: string;
   bundlePrice: number;
   normalPrice: number;
   savingAmount: number;

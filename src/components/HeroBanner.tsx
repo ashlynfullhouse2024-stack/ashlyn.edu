@@ -10,7 +10,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onExploreCatalog }) => {
       <div className="space-y-1.5 max-w-lg">
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] bg-white text-[#D9574F] font-bold px-2.5 py-0.5 rounded-full border border-[#D9574F]/20">
-            <span>🍓</span>
+            <span>🌷</span>
             <span>Produk Digital Siap Akses • Format Order Simpel</span>
           </span>
         </div>

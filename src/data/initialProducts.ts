@@ -1,4 +1,4 @@
-import { Product, StoreSettings } from '../types';
+import { CompletedOrder, Product, StoreSettings } from '../types';
 
 export const INITIAL_PRODUCTS: Product[] = [
   {
@@ -117,35 +117,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     accessLink: "https://inklusistudio.pages.dev/"
   },
   {
-    id: 9,
-    name: "Template Canva untuk Guru",
-    category: "Template Canva",
-    price: 25000,
-    rating: 4.9,
-    reviews: 150,
-    image: "/assets/aistudio/09_template-canva-untuk-guru-teacher-dashboard-canva-template-administrasi-.webp",
-    description: "Template Canva praktis untuk membantu menyiapkan kebutuhan mengajar.",
-    badge: "Canva Siap Pakai",
-    curriculum: "Canva Template",
-    inStock: true,
-    accessLink: "https://lynk.id/ashlyn_fullhouse/223528mqzx2o"
-  },
-  {
-    id: 10,
-    name: "Teacher Dashboard Canva Template | Administrasi Guru Aesthetic Pastel",
-    category: "Template Canva",
-    price: 30000,
-    originalPrice: 50000,
-    rating: 5.0,
-    reviews: 260,
-    image: "/assets/aistudio/09_template-canva-untuk-guru-teacher-dashboard-canva-template-administrasi-.webp",
-    description: "Dashboard administrasi guru dengan desain pastel yang rapi dan menarik.",
-    badge: "Aesthetic",
-    curriculum: "Canva Template",
-    inStock: true,
-    accessLink: "https://lynk.id/ashlyn_fullhouse/223528mqzx2o"
-  },
-  {
     id: 11,
     name: "Prompt Generator RPP All-In (Semua Jenjang)",
     category: "Prompt AI Edukasi",
@@ -184,7 +155,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     image: "/assets/aistudio/12_template-jurnal-guru-editable-canva-administrasi-guru-siap-pakai.webp",
     description: "Jurnal guru siap edit di Canva untuk membantu merapikan administrasi.",
     curriculum: "Canva Template",
-    inStock: true
+    inStock: true,
+    accessLink: "https://canva.link/3lyazu7potpxw37"
   },
   {
     id: 14,
@@ -196,20 +168,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     image: "/assets/aistudio/13_teacher-planner-tema-blue-aesthetic.webp",
     description: "Planner guru bertema biru untuk merencanakan kegiatan mengajar.",
     curriculum: "Perencanaan Mengajar",
-    inStock: true
-  },
-  {
-    id: 15,
-    name: "(PDF Files) Teacher Planner",
-    category: "Aplikasi & Administrasi",
-    price: 10000,
-    originalPrice: 20000,
-    rating: 4.7,
-    reviews: 130,
-    image: "/assets/aistudio/14_pdf-files-teacher-planner.webp",
-    description: "Teacher planner versi PDF untuk membantu mengatur jadwal dan tugas.",
-    curriculum: "Printable PDF",
-    inStock: true
+    inStock: true,
+    accessLink: "https://canva.link/bbh1dzhoaydc8me"
   },
   {
     id: 16,
@@ -222,132 +182,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     image: "/assets/aistudio/15_prompt-generator-untuk-cover-aesthetic.webp",
     description: "Buat ide prompt untuk menghasilkan cover yang estetik.",
     curriculum: "Desain Sampul",
-    inStock: true
-  },
-  {
-    id: 17,
-    name: "Poster Seri 1 – Karakter & Akhlak",
-    category: "Materi Ajar & LKPD",
-    price: 10000,
-    rating: 5.0,
-    reviews: 95,
-    image: "/assets/aistudio/16_poster-seri-1-karakter-akhlak.webp",
-    description: "Poster edukasi tentang karakter dan akhlak untuk mendukung pembelajaran.",
-    curriculum: "Pendidikan Karakter",
-    inStock: true
-  },
-  {
-    id: 18,
-    name: "PAKET POSTER EDUKASI KEBIASAAN BELAJAR – SERI 2",
-    category: "Materi Ajar & LKPD",
-    price: 10000,
-    rating: 4.9,
-    reviews: 64,
-    image: "/assets/aistudio/17_paket-poster-edukasi-kebiasaan-belajar-seri-2.webp",
-    description: "Poster edukasi untuk mengenalkan dan membangun kebiasaan belajar.",
-    curriculum: "Budaya Belajar",
-    inStock: true
-  },
-  {
-    id: 19,
-    name: "Abadikan momen si kecil dengan AI",
-    category: "Prompt AI Edukasi",
-    price: 30000,
-    rating: 4.8,
-    reviews: 55,
-    image: "/assets/aistudio/18_abadikan-momen-si-kecil-dengan-ai.webp",
-    description: "Gunakan prompt AI untuk membuat visual kenangan si kecil.",
-    curriculum: "Portofolio Anak",
-    inStock: true
-  },
-  {
-    id: 20,
-    name: "AI Prompt Bundle untuk Konten Kreator",
-    category: "Prompt AI Edukasi",
-    price: 15000,
-    originalPrice: 45000,
-    rating: 4.9,
-    reviews: 140,
-    image: "/assets/aistudio/19_ai-prompt-bundle-untuk-konten-kreator.webp",
-    description: "Kumpulan prompt AI untuk membantu merancang ide dan konten kreatif.",
-    curriculum: "Konten Edukasi",
-    inStock: true
-  },
-  {
-    id: 21,
-    name: "Prompt Stiker Bayi Gemesss",
-    category: "Free Resources",
-    price: 0,
-    rating: 5.0,
-    reviews: 420,
-    image: "/assets/aistudio/20_prompt-stiker-bayi-gemesss.webp",
-    description: "Prompt untuk membuat stiker bayi yang lucu dengan AI.",
-    badge: "Gratis",
-    curriculum: "Freebie",
-    inStock: true
-  },
-  {
-    id: 22,
-    name: "Materi Ajar: Greetings, Introduction, Leave Takings",
-    category: "Free Resources",
-    price: 0,
-    rating: 5.0,
-    reviews: 310,
-    image: "/assets/aistudio/21_materi-ajar-greetings-introduction-leave-takings.webp",
-    description: "Materi bahasa Inggris tentang sapaan, perkenalan, dan ungkapan perpisahan.",
-    badge: "Gratis",
-    curriculum: "Bahasa Inggris",
-    inStock: true
-  },
-  {
-    id: 23,
-    name: "Aplikasi Pembelajaran Interaktif: Simple Past Tense by Anispurwaningsih",
-    category: "Materi Ajar & LKPD",
-    price: 5000,
-    rating: 4.9,
-    reviews: 110,
-    image: "/assets/aistudio/02_aplikasi-pembuat-rpp-guru.webp",
-    description: "Media interaktif untuk belajar materi Simple Past Tense.",
-    badge: "Karya Guru",
-    curriculum: "Bahasa Inggris",
-    inStock: true
-  },
-  {
-    id: 24,
-    name: "Alphabet Workbook",
-    category: "Materi Ajar & LKPD",
-    price: 15000,
-    originalPrice: 20000,
-    rating: 4.8,
-    reviews: 75,
-    image: "/assets/aistudio/23_alphabet-workbook.webp",
-    description: "Lembar aktivitas untuk mengenal dan berlatih alfabet.",
-    curriculum: "Literasi Awal",
-    inStock: true
-  },
-  {
-    id: 25,
-    name: "Subject, To Be & Pronouns",
-    category: "Materi Ajar & LKPD",
-    price: 20000,
-    rating: 4.8,
-    reviews: 80,
-    image: "/assets/aistudio/24_subject-to-be-pronouns.webp",
-    description: "Materi latihan bahasa Inggris tentang subject, to be, dan pronouns.",
-    curriculum: "English Grammar",
-    inStock: true
-  },
-  {
-    id: 26,
-    name: "Tracing Huruf",
-    category: "Materi Ajar & LKPD",
-    price: 15000,
-    rating: 4.9,
-    reviews: 90,
-    image: "https://images.unsplash.com/photo-1596495578065-6e0763fa1178?auto=format&fit=crop&w=600&q=80",
-    description: "Aktivitas menebalkan huruf untuk membantu latihan menulis.",
-    curriculum: "Motorik Halus PAUD",
-    inStock: true
+    inStock: true,
+    accessLink: "https://cover-sosmed.pages.dev/"
   },
   {
     id: 27,
@@ -359,108 +195,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80",
     description: "Materi belajar teks naratif melalui cerita imajinatif.",
     curriculum: "Bahasa Inggris",
-    inStock: true
-  },
-  {
-    id: 28,
-    name: "(Lengkap dengan AppsScript) Absen Digital & Jurnal Mengajar",
-    category: "Aplikasi & Administrasi",
-    price: 55000,
-    rating: 5.0,
-    reviews: 180,
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80",
-    description: "Perangkat digital untuk mencatat kehadiran dan jurnal mengajar.",
-    badge: "AppsScript",
-    curriculum: "Administrasi Digital",
-    inStock: true
-  },
-  {
-    id: 29,
-    name: "TEMPLATE CANVA – REVIEW MATERI ASTS BAHASA INGGRIS KELAS 7",
-    category: "Template Canva",
-    price: 20000,
-    rating: 4.9,
-    reviews: 85,
-    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80",
-    description: "Template Canva untuk mengulas materi ASTS Bahasa Inggris kelas 7.",
-    curriculum: "Bahasa Inggris Kelas 7",
-    inStock: true
-  },
-  {
-    id: 30,
-    name: "++2500 Bank Video Siap Pakai",
-    category: "Materi Ajar & LKPD",
-    price: 25000,
-    originalPrice: 35000,
-    rating: 4.9,
-    reviews: 215,
-    image: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=600&q=80",
-    description: "Kumpulan lebih dari 2.500 video siap pakai untuk berbagai kebutuhan konten.",
-    badge: "2500+ Video",
-    curriculum: "Media Digital",
-    inStock: true
-  },
-  {
-    id: 31,
-    name: "Canva Sharing",
-    category: "Template Canva",
-    price: 20000,
-    originalPrice: 25000,
-    rating: 4.8,
-    reviews: 120,
-    image: "https://images.unsplash.com/photo-1542744094-3a31f272c490?auto=format&fit=crop&w=600&q=80",
-    description: "Akses berbagi Canva untuk mendukung kebutuhan desain.",
-    curriculum: "Canva Template",
-    inStock: true
-  },
-  {
-    id: 32,
-    name: "Thanking & Apologizing interactive Materials",
-    category: "Materi Ajar & LKPD",
-    price: 5000,
-    rating: 4.7,
-    reviews: 60,
-    image: "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=600&q=80",
-    description: "Materi interaktif bahasa Inggris tentang ungkapan berterima kasih dan meminta maaf.",
-    curriculum: "Bahasa Inggris",
-    inStock: true
-  },
-  {
-    id: 33,
-    name: "Absen Digital & Jurnal Mengajar (Hanya di Canva Website)",
-    category: "Template Canva",
-    price: 30000,
-    originalPrice: 40000,
-    rating: 4.9,
-    reviews: 145,
-    image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80",
-    description: "Template Canva Website untuk mencatat absensi dan jurnal mengajar.",
-    curriculum: "Canva Website",
-    inStock: true
-  },
-  {
-    id: 34,
-    name: "Jurnal Guru Bulanan",
-    category: "Aplikasi & Administrasi",
-    price: 15000,
-    rating: 4.8,
-    reviews: 90,
-    image: "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&w=600&q=80",
-    description: "Template jurnal bulanan untuk mencatat kegiatan mengajar.",
-    curriculum: "Administrasi Guru",
-    inStock: true
-  },
-  {
-    id: 35,
-    name: "Twibbon Back to School",
-    category: "Template Canva",
-    price: 15000,
-    rating: 4.8,
-    reviews: 130,
-    image: "https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=600&q=80",
-    description: "Twibbon bertema kembali ke sekolah untuk dibagikan secara digital.",
-    curriculum: "Canva Template",
-    inStock: true
+    inStock: true,
+    accessLink: "https://canva.link/9nf0tfv0zqvh4uf"
   }
 ];
 
@@ -469,8 +205,7 @@ export const CATEGORIES = [
   'Aplikasi & Administrasi',
   'Template Canva',
   'Prompt AI Edukasi',
-  'Materi Ajar & LKPD',
-  'Free Resources'
+  'Materi Ajar & LKPD'
 ] as const;
 
 export function formatRupiah(amount: number): string {
@@ -483,10 +218,9 @@ export const DEFAULT_STORE_SETTINGS = {
   storeName: 'Ashlyn Edu',
   instagramHandle: 'ashlyn.edu',
   bankAccounts: [
-    { bankName: 'BCA', accountNumber: '1234567890', accountHolder: 'Ashlyn Edu' },
-    { bankName: 'Mandiri', accountNumber: '1370001234567', accountHolder: 'Ashlyn Edu' },
-    { bankName: 'BRI', accountNumber: '012301098765501', accountHolder: 'Ashlyn Edu' },
-    { bankName: 'DANA / E-Wallet', accountNumber: '087895131563', accountHolder: 'Ashlyn Edu' }
+    { bankName: 'BCA', accountNumber: '4970394007', accountHolder: 'Anis Purwaningsih' },
+    { bankName: 'Mandiri', accountNumber: '1330025579962', accountHolder: 'Anis Purwaningsih' },
+    { bankName: 'Dana/E-wallet', accountNumber: '082213283648', accountHolder: 'Anis Purwaningsih' }
   ],
   greetingTemplate: 'Halo Admin Ashlyn Edu (ashlyn.edu) 🌸\nSaya ingin memesan perlengkapan kelas & modul berikut:',
   footerTemplate: 'Mohon dibantu konfirmasi pesanan dan proses pengirimannya ya kak. Terima kasih banyak! 🌸',
@@ -499,47 +233,81 @@ export const RECOMMENDED_BUNDLES: {
   tag: string;
   description: string;
   productIds: number[];
+  itemsIncluded: string[];
+  highlightBadge?: string;
   bundlePrice: number;
   normalPrice: number;
   savingAmount: number;
   emoji: string;
 }[] = [
   {
-    id: 'bundle-guru-ai',
-    title: 'Paket Komplit Guru AI',
-    tag: 'Paling Laris 🔥',
-    description: 'RPP Generator All-In + LKPD Gamification AI + Asisten Guru Pintar',
-    productIds: [11, 4, 5],
-    normalPrice: 203000,
-    bundlePrice: 165000,
-    savingAmount: 38000,
+    id: 'bundle-pkkm-edusuite',
+    title: 'Paket Kepala Sekolah & Guru AI (PKKM + RPP)',
+    tag: 'Hemat Rp 49rb 🔥',
+    description: 'PKKM Bikin Stres??? + Aplikasi Pembuat RPP Guru',
+    productIds: [1, 2],
+    itemsIncluded: [
+      'Generator Bukti Fisik PKKM 2026 AI',
+      'Aplikasi Pembuat RPP Guru (EduSuite AI)'
+    ],
+    highlightBadge: 'Termasuk 1 Akun Lisensi Privat (Username & Password)',
+    normalPrice: 248000,
+    bundlePrice: 199000,
+    savingAmount: 49000,
+    emoji: '🏆'
+  },
+  {
+    id: 'bundle-edusuite-lkpd',
+    title: 'Paket Super Guru AI (RPP + Prompt LKPD)',
+    tag: 'Paling Laris 🌸',
+    description: 'Aplikasi Pembuat RPP Guru + Prompt LKPD sekali beli untuk selamanya',
+    productIds: [2, 6],
+    itemsIncluded: [
+      'Aplikasi Pembuat RPP Guru (EduSuite AI)',
+      'Prompt LKPD sekali beli untuk selamanya (LKPD AI)'
+    ],
+    normalPrice: 144000,
+    bundlePrice: 119000,
+    savingAmount: 25000,
     emoji: '🤖'
   },
   {
-    id: 'bundle-canva-aesthetic',
-    title: 'Paket Canva Administrasi Pastel',
-    tag: 'Hemat Rp 15rb 🌸',
-    description: 'Teacher Dashboard Canva + Jurnal Guru Editable + Twibbon Back to School',
-    productIds: [10, 13, 35],
-    normalPrice: 60000,
-    bundlePrice: 45000,
-    savingAmount: 15000,
-    emoji: '🎨'
+    id: 'bundle-wali-kelas-manajemen',
+    title: 'Paket Komplit Wali Kelas & Piket Sekolah',
+    tag: 'Hemat Rp 34rb 🏫',
+    description: 'Asisten Guru Pintar + Aplikasi Guru Piket + Template Jurnal Guru Canva',
+    productIds: [5, 7, 13],
+    itemsIncluded: [
+      'Asisten Guru Pintar (Mapel, Wali Kelas, Ekskul)',
+      'Aplikasi Guru Piket & Tata Tertib Sekolah',
+      'Template Jurnal Guru Editable Canva'
+    ],
+    highlightBadge: '3 Perangkat Administrasi Harian Sekaligus',
+    normalPrice: 159000,
+    bundlePrice: 125000,
+    savingAmount: 34000,
+    emoji: '🏫'
   },
   {
-    id: 'bundle-literasi-bahasa',
-    title: 'Paket Literasi & Bahasa Inggris',
-    tag: 'Diskon Spesial 📚',
-    description: 'Alphabet Workbook + Tracing Huruf + Subject To Be & Pronouns',
-    productIds: [24, 26, 25],
-    normalPrice: 50000,
-    bundlePrice: 39000,
-    savingAmount: 11000,
-    emoji: '✏️'
+    id: 'bundle-gamifikasi-rpp-allin',
+    title: 'Paket Kelas Interaktif & Gamifikasi AI',
+    tag: 'Hemat Rp 30rb 🎮',
+    description: 'LKPD Gamification AI + Prompt Generator RPP All-In + Study Notes',
+    productIds: [4, 11, 3],
+    itemsIncluded: [
+      'LKPD Gamification AI (Pembelajaran Interaktif)',
+      'Prompt Generator RPP All-In (Semua Jenjang)',
+      'Study Notes (Catatan, Peta Konsep & Slide)'
+    ],
+    highlightBadge: 'Cocok untuk Guru SD, SMP & SMA/SMK',
+    normalPrice: 129000,
+    bundlePrice: 99000,
+    savingAmount: 30000,
+    emoji: '🎮'
   }
 ];
 
-export function calculateBundlingDiscount(cart: { price: number; qty?: number }[]): {
+export function calculateBundlingDiscount(cart: { id?: number; price: number; qty?: number }[]): {
   subtotal: number;
   discountAmount: number;
   discountPercent: number;
@@ -552,29 +320,78 @@ export function calculateBundlingDiscount(cart: { price: number; qty?: number }[
     .filter((item) => item.price > 0)
     .reduce((sum, item) => sum + (item.qty || 1), 0);
 
-  let discountPercent = 0;
-  let discountLabel = '';
+  let tierPercent = 0;
+  let tierLabel = '';
   let nextTierMessage = '';
 
   if (totalPaidItems === 0) {
     nextTierMessage = '';
   } else if (totalPaidItems === 1) {
-    nextTierMessage = 'Beli 1 produk lagi untuk dapat Diskon Bundling 5%! 🍓';
+    nextTierMessage = 'Beli 1 produk lagi untuk dapat Diskon Bundling 5% atau ambil Paket Bundling! 🌷';
   } else if (totalPaidItems === 2) {
-    discountPercent = 5;
-    discountLabel = 'Diskon Bundling 2 Produk (5%)';
+    tierPercent = 5;
+    tierLabel = 'Diskon Bundling 2 Produk (5%)';
     nextTierMessage = 'Tambah 1 lagi untuk naik ke Diskon Bundling 10%! 🎉';
   } else if (totalPaidItems === 3) {
-    discountPercent = 10;
-    discountLabel = 'Diskon Bundling 3 Produk (10%)';
+    tierPercent = 10;
+    tierLabel = 'Diskon Bundling 3 Produk (10%)';
     nextTierMessage = 'Tambah 1 lagi untuk Diskon Maksimal 15%! 🔥';
   } else if (totalPaidItems >= 4) {
-    discountPercent = 15;
-    discountLabel = 'Diskon Bundling Super Hemat (15%)';
+    tierPercent = 15;
+    tierLabel = 'Diskon Bundling Super Hemat (15%)';
     nextTierMessage = 'Selamat! Kamu dapat Diskon Bundling maksimal 15%! 🥳';
   }
 
-  const discountAmount = Math.round((subtotal * discountPercent) / 100);
+  // Check if cart matches any curated RECOMMENDED_BUNDLES
+  const remainingQtyById = new Map<number, number>();
+  const priceById = new Map<number, number>();
+  cart.forEach((item) => {
+    if (typeof item.id === 'number' && item.price > 0) {
+      remainingQtyById.set(item.id, (remainingQtyById.get(item.id) || 0) + (item.qty || 1));
+      priceById.set(item.id, item.price);
+    }
+  });
+
+  const sortedBundles = [...RECOMMENDED_BUNDLES].sort((a, b) => b.savingAmount - a.savingAmount);
+  let bundleSavingTotal = 0;
+  let consumedSubtotal = 0;
+  const matchedTitles: string[] = [];
+
+  for (const bundle of sortedBundles) {
+    while (bundle.productIds.every((pid) => (remainingQtyById.get(pid) || 0) >= 1)) {
+      bundle.productIds.forEach((pid) => {
+        remainingQtyById.set(pid, (remainingQtyById.get(pid) || 0) - 1);
+        consumedSubtotal += priceById.get(pid) || 0;
+      });
+      bundleSavingTotal += bundle.savingAmount;
+      if (!matchedTitles.includes(bundle.title)) {
+        matchedTitles.push(bundle.title);
+      }
+    }
+  }
+
+  const unbundledSubtotal = Math.max(0, subtotal - consumedSubtotal);
+  const extraTierSaving = Math.round((unbundledSubtotal * tierPercent) / 100);
+  const combinedBundleDiscount = bundleSavingTotal + extraTierSaving;
+  const pureTierDiscount = Math.round((subtotal * tierPercent) / 100);
+
+  let discountAmount = pureTierDiscount;
+  let discountLabel = tierLabel;
+  let discountPercent = tierPercent;
+
+  if (combinedBundleDiscount > pureTierDiscount && matchedTitles.length > 0) {
+    discountAmount = combinedBundleDiscount;
+    discountPercent = subtotal > 0 ? Math.round((discountAmount / subtotal) * 100) : 0;
+    discountLabel =
+      matchedTitles.length === 1
+        ? `Harga Spesial ${matchedTitles[0]}`
+        : `Harga Spesial ${matchedTitles.length} Paket Bundling`;
+    nextTierMessage =
+      unbundledSubtotal > 0
+        ? `Harga paket aktif + diskon ekstra ${tierPercent}% untuk produk tambahan! 🥳`
+        : 'Harga Spesial Paket Bundling otomatis diterapkan! 🌸';
+  }
+
   const total = Math.max(0, subtotal - discountAmount);
 
   return {
@@ -601,11 +418,18 @@ export function generateWaOrderText(
   order: {
     orderId?: string;
     date?: string;
-    items: { name: string; qty?: number; price: number }[];
+    items: { id?: number; name: string; qty?: number; price: number; accessLink?: string }[];
     subtotalAmount?: number;
     discountAmount?: number;
     discountLabel?: string;
     totalAmount: number;
+    assignedLicense?: {
+      username: string;
+      password: string;
+      role?: string;
+      licenseCode: string;
+      productName?: string;
+    };
     customer: {
       name: string;
       phone: string;
@@ -640,7 +464,10 @@ export function generateWaOrderText(
   }
 
   // Mode 2: Order Baru (Digital Product)
-  let text = `🍓 ORDER BARU: ${storeTitle} 🍓\n`;
+  let text = `🌸 ORDER BARU: ${storeTitle} 🌸\n`;
+  if (order.orderId) {
+    text += `ID Pesanan: #${order.orderId}\n`;
+  }
   text += `━━━━━━━━━━━━━━━━━━━━━\n`;
   text += `Nama: ${order.customer.name}\n`;
   text += `WhatsApp: ${order.customer.phone}\n`;
@@ -650,11 +477,27 @@ export function generateWaOrderText(
   text += `━━━━━━━━━━━━━━━━━━━━━\n`;
   text += `Rincian Pesanan:\n`;
 
+  const hasPkkm = order.items.some((item) => isPkkmItem(item));
+  const pkkmProduct = INITIAL_PRODUCTS.find((p) => p.id === 1);
+  const pkkmLink = pkkmProduct?.accessLink || 'https://generator-pkkm.pages.dev/';
+
   order.items.forEach((item, index) => {
     const qty = item.qty || 1;
     const itemTotal = item.price === 0 ? 'Gratis' : formatRupiah(item.price * qty);
     text += `${index + 1}. ${item.name} (${qty}x) - ${itemTotal}\n`;
+    if (isPkkmItem(item)) {
+      text += `   🔗 Link Aplikasi: ${item.accessLink || pkkmLink}\n`;
+    }
   });
+
+  if (hasPkkm && order.assignedLicense) {
+    text += `━━━━━━━━━━━━━━━━━━━━━\n`;
+    text += `🔐 *AKUN LISENSI APLIKASI PKKM (1 Pembeli 1 Akun):*\n`;
+    text += `• Link Akses: ${pkkmLink}\n`;
+    text += `• Username Lisensi: *${order.assignedLicense.username}*\n`;
+    text += `• Password Lisensi: *${order.assignedLicense.password}*\n`;
+    text += `• Kode Lisensi: ${order.assignedLicense.licenseCode}\n`;
+  }
 
   text += `━━━━━━━━━━━━━━━━━━━━━\n`;
   if (order.discountAmount && order.discountAmount > 0) {
@@ -666,13 +509,91 @@ export function generateWaOrderText(
     text += `TOTAL BAYAR: ${formatRupiah(order.totalAmount)}\n`;
   }
   text += `Metode Bayar: ${order.customer.paymentMethod}\n`;
+  if (settings.includeBankInWa && settings.bankAccounts && settings.bankAccounts.length > 0) {
+    text += `━━━━━━━━━━━━━━━━━━━━━\n`;
+    text += `Rekening Pembayaran:\n`;
+    settings.bankAccounts.forEach((b) => {
+      if (b.bankName && b.accountNumber) {
+        text += `• ${b.bankName}: ${b.accountNumber} (a.n ${b.accountHolder})\n`;
+      }
+    });
+  }
   if (order.customer.notes) {
     text += `Catatan: ${order.customer.notes}\n`;
   }
   text += `━━━━━━━━━━━━━━━━━━━━━\n`;
-  text += `Halo Admin ${settings.storeName}! Saya mau konfirmasi pembayaran untuk pesanan di atas ya. Terima kasih! 🍓✨`;
+  if (settings.greetingTemplate && settings.footerTemplate) {
+    text += `${settings.footerTemplate}\n`;
+  } else {
+    text += `Halo Admin ${settings.storeName}! Saya mau konfirmasi pembayaran untuk pesanan di atas ya. Terima kasih! 🌸✨`;
+  }
 
   return text;
+}
+
+export const PKKM_LICENSE_POOL: {
+  no: number;
+  username: string;
+  password: string;
+}[] = [
+  { no: 1, username: 'madrasah_juara01', password: 'MadrasahMaju#2026' },
+  { no: 2, username: 'pkkm_kemenag02', password: 'BerkahPanca719' },
+  { no: 3, username: 'guru_prestasi03', password: 'CintaIlmu!8834' },
+  { no: 4, username: 'kamad_hebat04', password: 'AmanahKamad@452' },
+  { no: 5, username: 'madrasah_unggul05', password: 'SuksesPKKM#916' },
+  { no: 6, username: 'tim_pkkm2026_06', password: 'PancaCinta$628' },
+  { no: 7, username: 'madrasah_bermutu07', password: 'KinerjaPenuh!351' },
+  { no: 8, username: 'guru_inovatif08', password: 'KBCMadrasah742' },
+  { no: 9, username: 'asesmen_pkkm09', password: 'AkreditasiA@820' },
+  { no: 10, username: 'madrasah_teladan10', password: 'InsanMulia#539' }
+];
+
+export function isPkkmItem(item: { id?: number; name: string }): boolean {
+  return item.id === 1 || item.name.toLowerCase().includes('pkkm');
+}
+
+export function orderHasPkkmProduct(order: CompletedOrder): boolean {
+  if (order.isQuestionOnly) return false;
+  return order.items.some((item) => isPkkmItem(item));
+}
+
+export function getPkkmLicenseSummary(orders: CompletedOrder[]) {
+  const usedMap = new Map<string, { orderId: string; customerName: string; status: string }>();
+
+  orders.forEach((o) => {
+    if (o.status !== 'Dibatalkan' && o.assignedLicense?.username) {
+      usedMap.set(o.assignedLicense.username, {
+        orderId: o.orderId,
+        customerName: o.customer.name,
+        status: o.status
+      });
+    }
+  });
+
+  const accountsWithStatus = PKKM_LICENSE_POOL.map((acc) => {
+    const usedBy = usedMap.get(acc.username);
+    return {
+      ...acc,
+      isUsed: Boolean(usedBy),
+      usedBy
+    };
+  });
+
+  const availableAccounts = accountsWithStatus.filter((a) => !a.isUsed);
+  const usedCount = accountsWithStatus.length - availableAccounts.length;
+  const remainingCount = availableAccounts.length;
+  const nextAvailable = availableAccounts[0] || null;
+  const isExhausted = remainingCount === 0;
+
+  return {
+    total: PKKM_LICENSE_POOL.length,
+    usedCount,
+    remainingCount,
+    isExhausted,
+    nextAvailable,
+    accountsWithStatus,
+    availableAccounts
+  };
 }
 
 // Menyesuaikan path aset dengan base URL (mis. saat deploy di subpath GitHub Pages)
@@ -680,3 +601,126 @@ export function fixImg(src: string): string {
   const base = import.meta.env.BASE_URL || '/';
   return src.startsWith('/assets/') && base !== '/' ? base + src.slice(1) : src;
 }
+
+export function generateAccessFulfillmentMessage(
+  order: CompletedOrder,
+  products: Product[] = INITIAL_PRODUCTS,
+  settings: StoreSettings = DEFAULT_STORE_SETTINGS,
+  fallbackLicense?: { username: string; password: string; licenseCode?: string } | null
+): string {
+  const storeName = settings.storeName || 'Ashlyn Edu';
+  const productMap = new Map<string, string>();
+  INITIAL_PRODUCTS.forEach((p) => {
+    if (p.accessLink) {
+      productMap.set(p.name.trim().toLowerCase(), p.accessLink);
+      productMap.set(String(p.id), p.accessLink);
+    }
+  });
+  products.forEach((p) => {
+    if (p.accessLink) {
+      productMap.set(p.name.trim().toLowerCase(), p.accessLink);
+      productMap.set(String(p.id), p.accessLink);
+    }
+  });
+
+  const hasPkkm = orderHasPkkmProduct(order);
+  const licenseToUse = order.assignedLicense || (hasPkkm ? fallbackLicense : null);
+
+  let text = `🌸 *KONFIRMASI PEMBAYARAN & AKSES PRODUK - ${storeName.toUpperCase()}* 🌸\n`;
+  text += `━━━━━━━━━━━━━━━━━━━━━\n`;
+  text += `Halo Kak *${order.customer.name}*! 👋✨\n`;
+  text += `Terima kasih banyak, pembayaran untuk pesanan *#${order.orderId}* sebesar *${formatRupiah(order.totalAmount)}* telah kami terima (LUNAS ✅).\n\n`;
+  text += `Berikut adalah tautan akses resmi untuk produk yang Kakak pesan:\n`;
+  text += `━━━━━━━━━━━━━━━━━━━━━\n`;
+
+  order.items.forEach((item, index) => {
+    const link =
+      item.accessLink ||
+      productMap.get(String(item.id)) ||
+      productMap.get(item.name.trim().toLowerCase());
+
+    text += `${index + 1}. *${item.name}* (${item.qty || 1}x)\n`;
+    if (link) {
+      text += `   🔗 Link Akses: ${link}\n`;
+    } else {
+      text += `   📩 File/akses dikirim langsung melalui chat ini ya Kak.\n`;
+    }
+    if (isPkkmItem(item) && licenseToUse) {
+      text += `   🔐 *Akun Login Lisensi PKKM (Khusus 1 Pembeli):*\n`;
+      text += `      • Username Lisensi: *${licenseToUse.username}*\n`;
+      text += `      • Password Lisensi: *${licenseToUse.password}*\n`;
+    } else if (isPkkmItem(item) && !licenseToUse) {
+      text += `   ⚠️ *Catatan Admin: Stok Akun Lisensi PKKM sedang habis (perlu penambahan stok).* \n`;
+    }
+    if (item.accessNote) {
+      text += `   📌 Catatan: ${item.accessNote}\n`;
+    }
+  });
+
+  text += `━━━━━━━━━━━━━━━━━━━━━\n`;
+  text += `💡 *Tips:* Silakan simpan pesan ini atau bookmark tautan di atas agar mudah diakses kapan saja.\n\n`;
+  text += `Semoga bermanfaat dan berkah selalu untuk kegiatan mengajarnya ya Kak! Jika ada kendala akses, jangan ragu hubungi kami kembali. 🌸🙏`;
+
+  return text;
+}
+
+export function generatePendingReminderMessage(
+  order: CompletedOrder,
+  settings: StoreSettings = DEFAULT_STORE_SETTINGS
+): string {
+  const storeName = settings.storeName || 'Ashlyn Edu';
+  let text = `Halo Kak *${order.customer.name}* 🌸\n\n`;
+  text += `Kami dari Admin *${storeName}* ingin mengonfirmasi kembali pesanan Kakak dengan ID *#${order.orderId}*:\n`;
+  order.items.forEach((item, idx) => {
+    text += `${idx + 1}. ${item.name} (${item.qty || 1}x)\n`;
+  });
+  text += `\nTotal Tagihan: *${formatRupiah(order.totalAmount)}*\n`;
+  text += `Metode Pembayaran: ${order.customer.paymentMethod}\n`;
+
+  if (settings.includeBankInWa && settings.bankAccounts && settings.bankAccounts.length > 0) {
+    text += `\n💳 *Rekening Pembayaran Resmi:*\n`;
+    settings.bankAccounts.forEach((b) => {
+      text += `• ${b.bankName}: ${b.accountNumber} (a.n ${b.accountHolder})\n`;
+    });
+  }
+
+  text += `\nApabila Kakak sudah melakukan pembayaran, mohon kirimkan bukti transfernya di chat ini agar link akses produk bisa langsung kami kirimkan ya Kak. Terima kasih banyak! 🌷✨`;
+  return text;
+}
+
+function getOrderTimestamp(order: CompletedOrder): number | null {
+  if (typeof order.createdAt === 'number' && !Number.isNaN(order.createdAt)) {
+    return order.createdAt;
+  }
+  const parsed = Date.parse(order.date);
+  if (!Number.isNaN(parsed)) {
+    return parsed;
+  }
+  return null;
+}
+
+export function isOrderPendingOver24Hours(order: CompletedOrder): boolean {
+  if (order.isQuestionOnly || order.status !== 'Menunggu Konfirmasi') {
+    return false;
+  }
+  const ts = getOrderTimestamp(order);
+  if (!ts) return false;
+  return Date.now() - ts >= 24 * 60 * 60 * 1000;
+}
+
+export function getOrderAgeText(order: CompletedOrder): string {
+  const ts = getOrderTimestamp(order);
+  if (!ts) return 'Baru saja';
+  const diffMs = Math.max(0, Date.now() - ts);
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  if (diffHours < 1) {
+    const diffMins = Math.max(1, Math.floor(diffMs / (1000 * 60)));
+    return `${diffMins} menit lalu`;
+  }
+  if (diffHours < 24) {
+    return `${diffHours} jam lalu`;
+  }
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays} hari lalu`;
+}
+

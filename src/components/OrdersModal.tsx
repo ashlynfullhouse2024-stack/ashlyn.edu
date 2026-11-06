@@ -16,7 +16,9 @@ import {
   Send, 
   Clock, 
   Link as LinkIcon,
-  Eye
+  Eye,
+  Key,
+  AlertTriangle
 } from 'lucide-react';
 import { CompletedOrder, OrderStatus, Product, StoreSettings } from '../types';
 import { 
@@ -26,7 +28,9 @@ import {
   generatePendingReminderMessage, 
   isOrderPendingOver24Hours,
   getOrderAgeText,
-  DEFAULT_STORE_SETTINGS
+  DEFAULT_STORE_SETTINGS,
+  getPkkmLicenseSummary,
+  orderHasPkkmProduct
 } from '../data/initialProducts';
 
 const STATUSES: OrderStatus[] = ['Menunggu Konfirmasi', 'Diproses', 'Dikirim', 'Selesai', 'Dibatalkan'];
@@ -51,11 +55,13 @@ export const OrdersModal: React.FC<Props> = ({
   onDelete, 
   onOpenInvoice,
   products = [],
-  settings = DEFAULT_STORE_SETTINGS
+  settings = DEFAULT_STORE_SETTINGS,
+  onUpdateOrder
 }) => {
   const [q, setQ] = useState('');
   const [statusFilter, setStatusFilter] = useState<'Semua' | OrderStatus>('Semua');
   const [showSheetsGuide, setShowSheetsGuide] = useState(false);
+  const [showPkkmPool, setShowPkkmPool] = useState(false);
   const [previewOrder, setPreviewOrder] = useState<CompletedOrder | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [sheetsUrl, setSheetsUrl] = useState(() => {
@@ -65,6 +71,8 @@ export const OrdersModal: React.FC<Props> = ({
     return (typeof localStorage !== 'undefined' && localStorage.getItem('ashlyn_google_sheets_token')) || '';
   });
   const [savedSheetsConfig, setSavedSheetsConfig] = useState(false);
+
+  const pkkmSummary = useMemo(() => getPkkmLicenseSummary(orders), [orders]);
 
   // Map product names / IDs to access links
   const productAccessMap = useMemo(() => {
@@ -104,11 +112,15 @@ export const OrdersModal: React.FC<Props> = ({
         .filter(Boolean)
         .join('; ');
 
+      const licText = o.assignedLicense
+        ? ` [PKKM Login: ${o.assignedLicense.username} / ${o.assignedLicense.password}]`
+        : '';
+
       rows.push([
         o.orderId, o.date, o.customer.name, o.customer.phone, o.customer.email || '-',
         o.isQuestionOnly ? 'Pertanyaan' : 'Pesanan', o.status,
         o.items.map((i) => `${i.name} x${i.qty}`).join('; '),
-        links || '-',
+        (links || '-') + licText,
         String(o.totalAmount)
       ]);
     });
@@ -120,8 +132,39 @@ export const OrdersModal: React.FC<Props> = ({
     URL.revokeObjectURL(a.href);
   };
 
+  // Ensure a PKKM order gets a unique 1-buyer-1-license account locked when confirmed/fulfilled
+  const ensureLicenseForOrder = (order: CompletedOrder, nextStatus?: OrderStatus): CompletedOrder => {
+    const targetStatus = nextStatus || order.status;
+    if (!orderHasPkkmProduct(order) || targetStatus === 'Dibatalkan') {
+      return nextStatus ? { ...order, status: nextStatus } : order;
+    }
+    if (order.assignedLicense) {
+      const updated = nextStatus ? { ...order, status: nextStatus } : order;
+      if (nextStatus && onUpdateOrder) onUpdateOrder(updated);
+      return updated;
+    }
+    if (pkkmSummary.nextAvailable) {
+      const updated: CompletedOrder = {
+        ...order,
+        status: nextStatus || (order.status === 'Menunggu Konfirmasi' ? 'Selesai' : order.status),
+        assignedLicense: {
+          username: pkkmSummary.nextAvailable.username,
+          password: pkkmSummary.nextAvailable.password,
+          licenseCode: `PKKM-${String(pkkmSummary.nextAvailable.no).padStart(2, '0')}`,
+          productName: 'PKKM Bikin Stres???'
+        }
+      };
+      if (onUpdateOrder) {
+        onUpdateOrder(updated);
+      }
+      return updated;
+    }
+    return nextStatus ? { ...order, status: nextStatus } : order;
+  };
+
   const copyAccessMessage = (order: CompletedOrder) => {
-    const msg = generateAccessFulfillmentMessage(order, products, settings);
+    const prepared = ensureLicenseForOrder(order);
+    const msg = generateAccessFulfillmentMessage(prepared, products, settings, pkkmSummary.nextAvailable);
     navigator.clipboard.writeText(msg);
     setCopiedId(order.orderId);
     setTimeout(() => setCopiedId(null), 2500);
@@ -179,6 +222,22 @@ export const OrdersModal: React.FC<Props> = ({
           </button>
           <button
             type="button"
+            onClick={() => setShowPkkmPool(!showPkkmPool)}
+            className={`cursor-pointer px-3 py-2 rounded-xl font-bold flex items-center gap-1.5 transition ${
+              pkkmSummary.isExhausted
+                ? 'bg-red-600 text-white animate-pulse'
+                : showPkkmPool
+                ? 'bg-[#D9574F] text-white'
+                : 'bg-[#FAF2E6] text-[#D9574F] border border-[#E9899F]/50 hover:bg-[#F8EBD8]'
+            }`}
+            title="Lihat Daftar 10 Akun Lisensi Pembeli Aplikasi PKKM"
+          >
+            <Key className="w-3.5 h-3.5" />
+            <span>Lisensi PKKM ({pkkmSummary.remainingCount}/{pkkmSummary.total})</span>
+            {showPkkmPool ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
+          <button
+            type="button"
             onClick={() => setShowSheetsGuide(!showSheetsGuide)}
             className={`cursor-pointer px-3 py-2 rounded-xl font-bold flex items-center gap-1.5 transition ${
               showSheetsGuide ? 'bg-[#0F9D58] text-white' : 'bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100'
@@ -190,6 +249,96 @@ export const OrdersModal: React.FC<Props> = ({
             {showSheetsGuide ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
         </div>
+
+        {/* Warning Banner when PKKM License Stock is Exhausted or Low */}
+        {pkkmSummary.isExhausted ? (
+          <div className="bg-red-50 border-b-2 border-red-300 px-4 py-2.5 flex items-center justify-between gap-2 text-xs text-red-800">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+              <div>
+                <strong className="font-bold">PERINGATAN STOK HABIS (0/{pkkmSummary.total}):</strong> Seluruh 10 Akun Lisensi Aplikasi PKKM telah terpakai! Produk PKKM otomatis ditandai <em>Stok Habis</em> di katalog.
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowPkkmPool(true)}
+              className="cursor-pointer px-2.5 py-1 rounded-lg bg-red-600 text-white font-bold text-[11px] shrink-0"
+            >
+              Cek Daftar Akun
+            </button>
+          </div>
+        ) : pkkmSummary.remainingCount <= 3 ? (
+          <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center justify-between gap-2 text-xs text-amber-900">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>
+                <strong>Stok Lisensi PKKM Menipis:</strong> Tersisa <strong>{pkkmSummary.remainingCount}</strong> dari {pkkmSummary.total} akun lisensi pembeli baru.
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowPkkmPool(!showPkkmPool)}
+              className="cursor-pointer text-[11px] font-bold text-amber-800 underline"
+            >
+              {showPkkmPool ? 'Tutup' : 'Lihat Akun'}
+            </button>
+          </div>
+        ) : null}
+
+        {/* Panel Daftar 10 Akun Lisensi PKKM */}
+        {showPkkmPool && (
+          <div className="bg-[#FAF2E6] border-b border-[#E9899F]/30 p-3 sm:p-4 text-xs space-y-2.5 max-h-60 overflow-y-auto custom-scrollbar">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <h4 className="font-bold text-[#D9574F] flex items-center gap-1.5 text-sm">
+                  <Key className="w-4 h-4" />
+                  <span>📋 Daftar 10 Akun Lisensi Pembeli Baru (PKKM Bikin Stres???)</span>
+                </h4>
+                <p className="text-[11px] text-stone-600">
+                  Sistem otomatis membagikan 1 Username & Password unik untuk setiap 1 pembeli saat pembayaran PKKM dikonfirmasi.
+                </p>
+              </div>
+              <span className={`px-2.5 py-1 rounded-full font-bold text-[11px] ${
+                pkkmSummary.isExhausted ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-800'
+              }`}>
+                Tersedia: {pkkmSummary.remainingCount} / {pkkmSummary.total} Akun
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              {pkkmSummary.accountsWithStatus.map((acc) => (
+                <div
+                  key={acc.no}
+                  className={`p-2 rounded-xl border flex items-center justify-between gap-2 text-[11px] ${
+                    acc.isUsed
+                      ? 'bg-stone-100 border-stone-300 text-stone-500'
+                      : 'bg-white border-emerald-200 text-stone-800'
+                  }`}
+                >
+                  <div className="min-w-0">
+                    <div className="font-mono font-bold truncate">
+                      {acc.no}. {acc.username}
+                    </div>
+                    <div className="font-mono text-[10px] text-stone-500">
+                      Pass: <span className="font-semibold text-stone-700">{acc.password}</span>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    {acc.isUsed && acc.usedBy ? (
+                      <span className="inline-block bg-stone-200 text-stone-700 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                        Terpakai ({acc.usedBy.customerName})
+                      </span>
+                    ) : (
+                      <span className="inline-block bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                        ✓ Tersedia
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Panel Panduan & Koneksi Google Sheets */}
         {showSheetsGuide && (
@@ -268,20 +417,13 @@ export const OrdersModal: React.FC<Props> = ({
           )}
 
           {shown.map((o) => {
-            const fulfillmentMsg = generateAccessFulfillmentMessage(o, products, settings);
+            const hasPkkm = orderHasPkkmProduct(o);
+            const fallbackLic = hasPkkm && !o.assignedLicense ? pkkmSummary.nextAvailable : null;
+            const fulfillmentMsg = generateAccessFulfillmentMessage(o, products, settings, fallbackLic);
             const pendingMsg = generatePendingReminderMessage(o, settings);
             const customerPhone = cleanWaPhone(o.customer.phone);
             const isPendingOver24h = isOrderPendingOver24Hours(o);
             const ageText = getOrderAgeText(o);
-
-            // Collect direct links for ordered items
-            const orderLinks: { name: string; link: string }[] = [];
-            o.items.forEach((item) => {
-              const link = item.accessLink || productAccessMap.get(item.name.trim().toLowerCase()) || '';
-              if (link) {
-                orderLinks.push({ name: item.name, link });
-              }
-            });
 
             return (
               <div 
@@ -341,7 +483,7 @@ export const OrdersModal: React.FC<Props> = ({
                 </div>
 
                 {/* Items & Access Links */}
-                <div className="bg-[#FAF2E6]/60 p-2.5 rounded-xl border border-[#E9899F]/20 space-y-1.5">
+                <div className="bg-[#FAF2E6]/60 p-2.5 rounded-xl border border-[#E9899F]/20 space-y-2">
                   <div className="text-[11px] font-semibold text-stone-700">
                     Item Dipesan:
                   </div>
@@ -374,6 +516,38 @@ export const OrdersModal: React.FC<Props> = ({
                       );
                     })}
                   </div>
+
+                  {/* PKKM License Info Box inside Order Card */}
+                  {hasPkkm && (
+                    <div className={`p-2 rounded-lg border text-[11px] flex items-center justify-between gap-2 flex-wrap ${
+                      o.assignedLicense
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                        : pkkmSummary.isExhausted
+                        ? 'bg-red-50 border-red-300 text-red-800'
+                        : 'bg-amber-50 border-amber-200 text-amber-900'
+                    }`}>
+                      {o.assignedLicense ? (
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <Key className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                          <span>
+                            <strong>Akun Lisensi PKKM Terkunci:</strong> Username <code className="bg-white px-1.5 py-0.5 rounded border border-emerald-200 font-mono font-bold">{o.assignedLicense.username}</code> • Pass <code className="bg-white px-1.5 py-0.5 rounded border border-emerald-200 font-mono font-bold">{o.assignedLicense.password}</code>
+                          </span>
+                        </div>
+                      ) : pkkmSummary.isExhausted ? (
+                        <div className="flex items-center gap-1.5 font-bold">
+                          <AlertTriangle className="w-3.5 h-3.5 text-red-600 shrink-0" />
+                          <span>Stok 10 Akun Lisensi PKKM Habis! Tidak ada akun tersisa untuk pesanan ini.</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5">
+                          <Key className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                          <span>
+                            Siap kirim Akun Berikutnya: <strong className="font-mono">{pkkmSummary.nextAvailable?.username}</strong> / <strong className="font-mono">{pkkmSummary.nextAvailable?.password}</strong>
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Action Buttons Row */}
@@ -383,7 +557,14 @@ export const OrdersModal: React.FC<Props> = ({
                     <span className="text-[11px] text-stone-500">Status:</span>
                     <select 
                       value={o.status} 
-                      onChange={(e) => onChangeStatus(o.orderId, e.target.value as OrderStatus)}
+                      onChange={(e) => {
+                        const newStat = e.target.value as OrderStatus;
+                        if (hasPkkm && (newStat === 'Diproses' || newStat === 'Dikirim' || newStat === 'Selesai') && !o.assignedLicense) {
+                          ensureLicenseForOrder(o, newStat);
+                        } else {
+                          onChangeStatus(o.orderId, newStat);
+                        }
+                      }}
                       className="px-2 py-1 rounded-lg border border-stone-200 text-[11px] font-bold bg-white cursor-pointer"
                     >
                       {STATUSES.map((s) => <option key={s}>{s}</option>)}
@@ -395,11 +576,18 @@ export const OrdersModal: React.FC<Props> = ({
                     href={`https://wa.me/${customerPhone}?text=${encodeURIComponent(fulfillmentMsg)}`}
                     target="_blank" 
                     rel="noopener noreferrer"
+                    onClick={() => {
+                      if (hasPkkm && !o.assignedLicense) {
+                        ensureLicenseForOrder(o, 'Selesai');
+                      } else if (o.status === 'Menunggu Konfirmasi') {
+                        onChangeStatus(o.orderId, 'Selesai');
+                      }
+                    }}
                     className="cursor-pointer px-3 py-1.5 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white flex items-center gap-1.5 text-[11px] font-bold shadow-xs active:scale-95 transition"
-                    title="Kirim pesan konfirmasi pembayaran + Link akses materi produk langsung ke WhatsApp pelanggan"
+                    title="Kirim pesan konfirmasi pembayaran + Link akses materi & akun lisensi produk langsung ke WhatsApp pelanggan"
                   >
                     <Sparkles className="w-3.5 h-3.5 fill-white text-[#25D366]" />
-                    <span>Kirim Link Akses WA</span>
+                    <span>{hasPkkm ? 'Konfirmasi & Kirim Link + Akun PKKM' : 'Kirim Link Akses WA'}</span>
                     <ExternalLink className="w-3 h-3 opacity-80" />
                   </a>
 
@@ -493,13 +681,21 @@ export const OrdersModal: React.FC<Props> = ({
             </p>
 
             <pre className="text-[11px] text-stone-800 font-mono whitespace-pre-wrap bg-[#FAF2E6] p-3 rounded-2xl border border-[#E9899F]/30 max-h-64 overflow-y-auto leading-relaxed custom-scrollbar">
-              {generateAccessFulfillmentMessage(previewOrder, products, settings)}
+              {generateAccessFulfillmentMessage(
+                previewOrder,
+                products,
+                settings,
+                orderHasPkkmProduct(previewOrder) && !previewOrder.assignedLicense ? pkkmSummary.nextAvailable : null
+              )}
             </pre>
 
             <div className="flex items-center justify-end gap-2 pt-1">
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(generateAccessFulfillmentMessage(previewOrder, products, settings));
+                  const prepared = ensureLicenseForOrder(previewOrder);
+                  navigator.clipboard.writeText(
+                    generateAccessFulfillmentMessage(prepared, products, settings, pkkmSummary.nextAvailable)
+                  );
                   setCopiedId(previewOrder.orderId);
                   setTimeout(() => setCopiedId(null), 2000);
                 }}
@@ -511,10 +707,19 @@ export const OrdersModal: React.FC<Props> = ({
 
               <a
                 href={`https://wa.me/${cleanWaPhone(previewOrder.customer.phone)}?text=${encodeURIComponent(
-                  generateAccessFulfillmentMessage(previewOrder, products, settings)
+                  generateAccessFulfillmentMessage(
+                    previewOrder,
+                    products,
+                    settings,
+                    orderHasPkkmProduct(previewOrder) && !previewOrder.assignedLicense ? pkkmSummary.nextAvailable : null
+                  )
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => {
+                  const updated = ensureLicenseForOrder(previewOrder, 'Selesai');
+                  setPreviewOrder(updated);
+                }}
                 className="cursor-pointer px-4 py-2 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs flex items-center gap-1.5 shadow-sm"
               >
                 <Send className="w-3.5 h-3.5" />

@@ -101,7 +101,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 ) : (
                   <div>
                     <span className="font-bold text-[#D9574F] flex items-center gap-1">
-                      <span>🍓</span>
+                      <span>🌷</span>
                       <span>Promo Diskon Bundling</span>
                     </span>
                     <p className="text-[11px] text-stone-600 mt-0.5">
@@ -191,16 +191,23 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-bold text-[#4d5e3c] flex items-center gap-1">
                       <Sparkles className="w-3.5 h-3.5 text-[#8FA477]" />
-                      <span>Ide Bundling Hemat 🍓</span>
+                      <span>Ide Bundling Hemat 🌼</span>
                     </span>
                     <span className="text-[10px] bg-[#8FA477] text-white px-2 py-0.2 rounded-full font-bold">
                       Lebih Hemat
                     </span>
                   </div>
                   {(() => {
-                    const bundleSuggest = cart.some((c) => c.id === 1 || c.id === 2) 
-                      ? (cart.some((c) => c.id === 1) ? RECOMMENDED_BUNDLES[1] : RECOMMENDED_BUNDLES[0])
-                      : RECOMMENDED_BUNDLES[0];
+                    const cartIds = new Set(cart.map((c) => c.id));
+                    const incompleteBundles = RECOMMENDED_BUNDLES.filter(
+                      (b) => !b.productIds.every((pid) => cartIds.has(pid))
+                    );
+                    const bundleSuggest =
+                      incompleteBundles.find((b) =>
+                        b.productIds.some((pid) => cartIds.has(pid))
+                      ) ||
+                      incompleteBundles[0] ||
+                      RECOMMENDED_BUNDLES[0];
                     return (
                       <div className="text-[11px] text-stone-600">
                         <strong className="text-stone-800 block">{bundleSuggest.title}</strong>

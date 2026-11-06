@@ -11,14 +11,15 @@ import {
   Sparkles,
   HelpCircle
 } from 'lucide-react';
-import { CartItem, OrderCustomerInfo } from '../types';
-import { formatRupiah, calculateBundlingDiscount } from '../data/initialProducts';
+import { CartItem, OrderCustomerInfo, StoreSettings } from '../types';
+import { formatRupiah, calculateBundlingDiscount, DEFAULT_STORE_SETTINGS } from '../data/initialProducts';
 
 interface OrderCheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
   onBackToCart: () => void;
   cart: CartItem[];
+  settings?: StoreSettings;
   onSubmitOrder: (
     customerInfo: OrderCustomerInfo,
     discountData: ReturnType<typeof calculateBundlingDiscount>
@@ -30,14 +31,26 @@ export const OrderCheckoutModal: React.FC<OrderCheckoutModalProps> = ({
   onClose,
   onBackToCart,
   cart,
+  settings = DEFAULT_STORE_SETTINGS,
   onSubmitOrder
 }) => {
+  const bankOptions =
+    settings.bankAccounts && settings.bankAccounts.length > 0
+      ? settings.bankAccounts.map(
+          (b) => `${b.bankName} ${b.accountNumber} (${b.accountHolder})`
+        )
+      : [
+          'BCA 4970394007 (Anis Purwaningsih)',
+          'Mandiri 1330025579962 (Anis Purwaningsih)',
+          'Dana/E-wallet 082213283648 (Anis Purwaningsih)'
+        ];
+
   const [checkoutMode, setCheckoutMode] = useState<'order' | 'inquiry'>('order');
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
     email: '',
-    paymentMethod: 'QRIS / Bank BCA Only',
+    paymentMethod: bankOptions[0],
     notes: '',
     questionText: ''
   });
@@ -99,7 +112,7 @@ export const OrderCheckoutModal: React.FC<OrderCheckoutModalProps> = ({
             </button>
             <div>
               <h3 className="font-brand text-base sm:text-lg text-[#D9574F] font-bold leading-tight">
-                {checkoutMode === 'order' ? 'Konfirmasi Pesanan Digital 🍓' : 'Tanya-Tanya ke Admin 💬'}
+                {checkoutMode === 'order' ? 'Konfirmasi Pesanan Digital 🌸' : 'Tanya-Tanya ke Admin 💬'}
               </h3>
               <p className="text-[11px] text-stone-500">
                 Akses langsung via WhatsApp • Tanpa ribet alamat fisik
@@ -127,7 +140,7 @@ export const OrderCheckoutModal: React.FC<OrderCheckoutModalProps> = ({
                 : 'text-stone-600 hover:text-stone-900'
             }`}
           >
-            <span>🍓</span>
+            <span>🌷</span>
             <span>Langsung Pesan</span>
           </button>
 
@@ -213,12 +226,11 @@ export const OrderCheckoutModal: React.FC<OrderCheckoutModalProps> = ({
                   onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
                   className="w-full bg-[#F8EBD8]/30 focus:bg-white border-2 border-[#E9899F]/30 focus:border-[#D9574F] rounded-xl px-3 py-2 text-stone-800 outline-none transition cursor-pointer font-medium"
                 >
-                  <option value="QRIS / Bank BCA Only">QRIS / Bank BCA Only</option>
-                  <option value="Transfer Bank BCA">Transfer Bank BCA</option>
-                  <option value="QRIS (GoPay, OVO, ShopeePay, DANA)">QRIS (All E-Wallet)</option>
-                  <option value="Transfer Bank Mandiri">Transfer Bank Mandiri</option>
-                  <option value="Transfer Bank BRI">Transfer Bank BRI</option>
-                  <option value="DANA / ShopeePay">DANA / ShopeePay</option>
+                  {bankOptions.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -285,7 +297,7 @@ export const OrderCheckoutModal: React.FC<OrderCheckoutModalProps> = ({
               <MessageSquare className="w-4 h-4" />
               <span>
                 {checkoutMode === 'order'
-                  ? '🍓 Buka WhatsApp & Konfirmasi Pesanan'
+                  ? '🌸 Buka WhatsApp & Konfirmasi Pesanan'
                   : '💬 Buka WhatsApp & Tanya Admin'}
               </span>
             </button>
