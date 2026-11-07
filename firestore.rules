@@ -1,0 +1,198 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper Functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isSignedIn() && request.auth.uid == resource.data.ownerId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        (request.auth.token.email == "anpurwa001@gmail.com" && request.auth.token.email_verified == true)
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidOrderStatus(status) {
+      return status in ['Menunggu Konfirmasi', 'Lunas', 'Diproses', 'Dikirim', 'Selesai', 'Dibatalkan'];
+    }
+
+    function isValidOrder(data) {
+      let requiredFields = [
+        'orderId',
+        'ownerId',
+        'date',
+        'customerName',
+        'customerPhone',
+        'paymentMethod',
+        'itemsJson',
+        'totalAmount',
+        'status',
+        'isQuestionOnly',
+        'hasPkkm',
+        'createdAt',
+        'updatedAt'
+      ];
+      let allAllowedFields = [
+        'orderId',
+        'ownerId',
+        'date',
+        'customerName',
+        'customerPhone',
+        'customerEmail',
+        'paymentMethod',
+        'notes',
+        'itemsJson',
+        'subtotalAmount',
+        'discountAmount',
+        'discountLabel',
+        'totalAmount',
+        'status',
+        'isQuestionOnly',
+        'hasPkkm',
+        'licenseCode',
+        'licenseUsername',
+        'licensePassword',
+        'createdAt',
+        'updatedAt'
+      ];
+      return data.keys().hasAll(requiredFields) &&
+        data.keys().hasOnly(allAllowedFields) &&
+        data.orderId is string && data.orderId.size() >= 1 && data.orderId.size() <= 64 && data.orderId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.date is string && data.date.size() >= 1 && data.date.size() <= 64 &&
+        data.customerName is string && data.customerName.size() >= 1 && data.customerName.size() <= 120 &&
+        data.customerPhone is string && data.customerPhone.size() >= 5 && data.customerPhone.size() <= 32 &&
+        (!('customerEmail' in data) || (data.customerEmail is string && data.customerEmail.size() <= 160)) &&
+        data.paymentMethod is string && data.paymentMethod.size() >= 1 && data.paymentMethod.size() <= 120 &&
+        (!('notes' in data) || (data.notes is string && data.notes.size() <= 500)) &&
+        data.itemsJson is list && data.itemsJson.size() >= 1 && data.itemsJson.size() <= 15 &&
+        (!('subtotalAmount' in data) || (data.subtotalAmount is number && data.subtotalAmount >= 0 && data.subtotalAmount <= 100000000)) &&
+        (!('discountAmount' in data) || (data.discountAmount is number && data.discountAmount >= 0 && data.discountAmount <= 100000000)) &&
+        (!('discountLabel' in data) || (data.discountLabel is string && data.discountLabel.size() <= 120)) &&
+        data.totalAmount is number && data.totalAmount >= 0 && data.totalAmount <= 100000000 &&
+        isValidOrderStatus(data.status) &&
+        data.isQuestionOnly is bool &&
+        data.hasPkkm is bool &&
+        (!('licenseCode' in data) || (data.licenseCode is string && data.licenseCode.size() <= 32)) &&
+        (!('licenseUsername' in data) || (data.licenseUsername is string && data.licenseUsername.size() <= 64)) &&
+        (!('licensePassword' in data) || (data.licensePassword is string && data.licensePassword.size() <= 64)) &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidPkkmLicense(data) {
+      let requiredFields = [
+        'licenseCode',
+        'no',
+        'username',
+        'password',
+        'isUsed',
+        'ownerId',
+        'createdAt',
+        'updatedAt'
+      ];
+      let allAllowedFields = [
+        'licenseCode',
+        'no',
+        'username',
+        'password',
+        'isUsed',
+        'orderId',
+        'customerName',
+        'ownerId',
+        'createdAt',
+        'updatedAt'
+      ];
+      return data.keys().hasAll(requiredFields) &&
+        data.keys().hasOnly(allAllowedFields) &&
+        data.licenseCode is string && data.licenseCode.size() >= 1 && data.licenseCode.size() <= 32 && data.licenseCode.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.no is number && data.no >= 1 && data.no <= 10 &&
+        data.username is string && data.username.size() >= 1 && data.username.size() <= 64 &&
+        data.password is string && data.password.size() >= 1 && data.password.size() <= 64 &&
+        data.isUsed is bool &&
+        (!('orderId' in data) || (data.orderId is string && data.orderId.size() <= 64)) &&
+        (!('customerName' in data) || (data.customerName is string && data.customerName.size() <= 120)) &&
+        data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    match /orders/{orderId} {
+      allow get, list: if isDocOwner() || isAdmin();
+      allow create: if isValidId(orderId) &&
+        isSignedIn() &&
+        isOwner(request.resource.data.ownerId) &&
+        request.resource.data.orderId == orderId &&
+        isValidOrder(request.resource.data) &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.updatedAt == request.time &&
+        (isAdmin() || (
+          request.resource.data.status == 'Menunggu Konfirmasi' &&
+          !('licenseUsername' in request.resource.data) &&
+          !('licensePassword' in request.resource.data)
+        ));
+      allow update: if isValidId(orderId) &&
+        isAdmin() &&
+        isValidOrder(request.resource.data) &&
+        request.resource.data.orderId == resource.data.orderId &&
+        request.resource.data.ownerId == resource.data.ownerId &&
+        request.resource.data.createdAt == resource.data.createdAt &&
+        request.resource.data.updatedAt == request.time &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status',
+          'licenseCode',
+          'licenseUsername',
+          'licensePassword',
+          'notes',
+          'updatedAt'
+        ]);
+      allow delete: if isValidId(orderId) && isAdmin();
+    }
+
+    match /pkkmLicenses/{licenseId} {
+      allow get, list: if isAdmin();
+      allow create: if isValidId(licenseId) &&
+        isAdmin() &&
+        isOwner(request.resource.data.ownerId) &&
+        request.resource.data.licenseCode == licenseId &&
+        isValidPkkmLicense(request.resource.data) &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.updatedAt == request.time;
+      allow update: if isValidId(licenseId) &&
+        isAdmin() &&
+        isValidPkkmLicense(request.resource.data) &&
+        request.resource.data.licenseCode == resource.data.licenseCode &&
+        request.resource.data.no == resource.data.no &&
+        request.resource.data.username == resource.data.username &&
+        request.resource.data.password == resource.data.password &&
+        request.resource.data.ownerId == resource.data.ownerId &&
+        request.resource.data.createdAt == resource.data.createdAt &&
+        request.resource.data.updatedAt == request.time &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'isUsed',
+          'orderId',
+          'customerName',
+          'updatedAt'
+        ]);
+      allow delete: if isValidId(licenseId) && isAdmin();
+    }
+  }
+}

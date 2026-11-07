@@ -60,7 +60,7 @@ export interface BundlePackage {
   emoji: string;
 }
 
-export type OrderStatus = 'Menunggu Konfirmasi' | 'Diproses' | 'Dikirim' | 'Selesai' | 'Dibatalkan';
+export type OrderStatus = 'Menunggu Konfirmasi' | 'Lunas' | 'Diproses' | 'Dikirim' | 'Selesai' | 'Dibatalkan';
 
 export interface PkkmLicenseAccount {
   no: number;

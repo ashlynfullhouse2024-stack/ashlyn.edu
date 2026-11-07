@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { verifyAdminPassword, getLockRemainingMs, resetAdminAttempts } from '../lib/adminAuth';
 import { X, Lock, ShieldCheck, AlertCircle, Eye, EyeOff } from 'lucide-react';
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   X, 
   MessageSquare, 
@@ -12,7 +12,7 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { CartItem, OrderCustomerInfo, StoreSettings } from '../types';
-import { formatRupiah, calculateBundlingDiscount, DEFAULT_STORE_SETTINGS } from '../data/initialProducts';
+import { formatRupiah, calculateBundlingDiscount, DEFAULT_STORE_SETTINGS, formatPaymentMethodName } from '../data/initialProducts';
 
 interface OrderCheckoutModalProps {
   isOpen: boolean;
@@ -36,24 +36,24 @@ export const OrderCheckoutModal: React.FC<OrderCheckoutModalProps> = ({
 }) => {
   const bankOptions =
     settings.bankAccounts && settings.bankAccounts.length > 0
-      ? settings.bankAccounts.map(
-          (b) => `${b.bankName} ${b.accountNumber} (${b.accountHolder})`
-        )
-      : [
-          'BCA 4970394007 (Anis Purwaningsih)',
-          'Mandiri 1330025579962 (Anis Purwaningsih)',
-          'Dana/E-wallet 082213283648 (Anis Purwaningsih)'
-        ];
+      ? settings.bankAccounts.map((b) => formatPaymentMethodName(b.bankName)).filter(Boolean)
+      : ['BCA', 'Mandiri', 'Dana/E-Wallet'];
 
   const [checkoutMode, setCheckoutMode] = useState<'order' | 'inquiry'>('order');
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
     email: '',
-    paymentMethod: bankOptions[0],
+    paymentMethod: bankOptions[0] || 'BCA',
     notes: '',
     questionText: ''
   });
+
+  React.useEffect(() => {
+    if (!bankOptions.includes(formData.paymentMethod)) {
+      setFormData((prev) => ({ ...prev, paymentMethod: bankOptions[0] || 'BCA' }));
+    }
+  }, [bankOptions, formData.paymentMethod]);
 
   const discountData = calculateBundlingDiscount(cart);
 
@@ -68,7 +68,7 @@ export const OrderCheckoutModal: React.FC<OrderCheckoutModalProps> = ({
         name: formData.name.trim(),
         phone: formData.phone.trim(),
         email: formData.email.trim() || undefined,
-        paymentMethod: formData.paymentMethod,
+        paymentMethod: formatPaymentMethodName(formData.paymentMethod),
         notes: formData.notes.trim() || undefined,
         isQuestionOnly: checkoutMode === 'inquiry',
         questionText: formData.questionText.trim() || undefined

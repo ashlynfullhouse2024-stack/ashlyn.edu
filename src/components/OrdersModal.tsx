@@ -33,7 +33,7 @@ import {
   orderHasPkkmProduct
 } from '../data/initialProducts';
 
-const STATUSES: OrderStatus[] = ['Menunggu Konfirmasi', 'Diproses', 'Dikirim', 'Selesai', 'Dibatalkan'];
+const STATUSES: OrderStatus[] = ['Menunggu Konfirmasi', 'Lunas', 'Diproses', 'Dikirim', 'Selesai', 'Dibatalkan'];
 
 interface Props {
   isOpen: boolean;
@@ -136,17 +136,25 @@ export const OrdersModal: React.FC<Props> = ({
   const ensureLicenseForOrder = (order: CompletedOrder, nextStatus?: OrderStatus): CompletedOrder => {
     const targetStatus = nextStatus || order.status;
     if (!orderHasPkkmProduct(order) || targetStatus === 'Dibatalkan') {
-      return nextStatus ? { ...order, status: nextStatus } : order;
+      const plainUpdated = nextStatus ? { ...order, status: nextStatus } : order;
+      if (nextStatus) {
+        if (onUpdateOrder) onUpdateOrder(plainUpdated);
+        else onChangeStatus(order.orderId, nextStatus);
+      }
+      return plainUpdated;
     }
     if (order.assignedLicense) {
       const updated = nextStatus ? { ...order, status: nextStatus } : order;
-      if (nextStatus && onUpdateOrder) onUpdateOrder(updated);
+      if (nextStatus) {
+        if (onUpdateOrder) onUpdateOrder(updated);
+        else onChangeStatus(order.orderId, nextStatus);
+      }
       return updated;
     }
     if (pkkmSummary.nextAvailable) {
       const updated: CompletedOrder = {
         ...order,
-        status: nextStatus || (order.status === 'Menunggu Konfirmasi' ? 'Selesai' : order.status),
+        status: nextStatus || (order.status === 'Menunggu Konfirmasi' ? 'Lunas' : order.status),
         assignedLicense: {
           username: pkkmSummary.nextAvailable.username,
           password: pkkmSummary.nextAvailable.password,
@@ -156,10 +164,30 @@ export const OrdersModal: React.FC<Props> = ({
       };
       if (onUpdateOrder) {
         onUpdateOrder(updated);
+      } else if (nextStatus) {
+        onChangeStatus(order.orderId, nextStatus);
       }
       return updated;
     }
-    return nextStatus ? { ...order, status: nextStatus } : order;
+    const fallbackUpdated = nextStatus ? { ...order, status: nextStatus } : order;
+    if (nextStatus) {
+      if (onUpdateOrder) onUpdateOrder(fallbackUpdated);
+      else onChangeStatus(order.orderId, nextStatus);
+    }
+    return fallbackUpdated;
+  };
+
+  const markAsLunasAndSendWa = (order: CompletedOrder) => {
+    const updated = ensureLicenseForOrder(order, 'Lunas');
+    const msg = generateAccessFulfillmentMessage(updated, products, settings, pkkmSummary.nextAvailable);
+    const customerPhone = cleanWaPhone(updated.customer.phone);
+    const a = document.createElement('a');
+    a.href = `https://wa.me/${customerPhone}?text=${encodeURIComponent(msg)}`;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const copyAccessMessage = (order: CompletedOrder) => {
@@ -443,12 +471,12 @@ export const OrdersModal: React.FC<Props> = ({
                         </span>
                       )}
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        o.status === 'Selesai' ? 'bg-emerald-100 text-emerald-800' :
+                        o.status === 'Lunas' || o.status === 'Selesai' ? 'bg-emerald-100 text-emerald-800' :
                         o.status === 'Diproses' || o.status === 'Dikirim' ? 'bg-blue-100 text-blue-800' :
                         o.status === 'Dibatalkan' ? 'bg-red-100 text-red-800' :
                         'bg-amber-100 text-amber-800'
                       }`}>
-                        {o.status}
+                        {o.status === 'Lunas' ? '✅ Lunas' : o.status}
                       </span>
                       {isPendingOver24h && (
                         <span className="text-[10px] bg-amber-500 text-white font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs animate-pulse">
@@ -530,7 +558,7 @@ export const OrdersModal: React.FC<Props> = ({
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <Key className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                           <span>
-                            <strong>Akun Lisensi PKKM Terkunci:</strong> Username <code className="bg-white px-1.5 py-0.5 rounded border border-emerald-200 font-mono font-bold">{o.assignedLicense.username}</code> • Pass <code className="bg-white px-1.5 py-0.5 rounded border border-emerald-200 font-mono font-bold">{o.assignedLicense.password}</code>
+                            <strong>Akun Lisensi PKKM ({o.assignedLicense.licenseCode}):</strong> Username <code className="bg-white px-1.5 py-0.5 rounded border border-emerald-200 font-mono font-bold">{o.assignedLicense.username}</code> • Pass <code className="bg-white px-1.5 py-0.5 rounded border border-emerald-200 font-mono font-bold">{o.assignedLicense.password}</code>
                           </span>
                         </div>
                       ) : pkkmSummary.isExhausted ? (
@@ -542,7 +570,7 @@ export const OrdersModal: React.FC<Props> = ({
                         <div className="flex items-center gap-1.5">
                           <Key className="w-3.5 h-3.5 text-amber-700 shrink-0" />
                           <span>
-                            Siap kirim Akun Berikutnya: <strong className="font-mono">{pkkmSummary.nextAvailable?.username}</strong> / <strong className="font-mono">{pkkmSummary.nextAvailable?.password}</strong>
+                            Siap dialokasikan saat Lunas: <strong className="font-mono">{pkkmSummary.nextAvailable?.username}</strong> / <strong className="font-mono">{pkkmSummary.nextAvailable?.password}</strong>
                           </span>
                         </div>
                       )}
@@ -559,7 +587,9 @@ export const OrdersModal: React.FC<Props> = ({
                       value={o.status} 
                       onChange={(e) => {
                         const newStat = e.target.value as OrderStatus;
-                        if (hasPkkm && (newStat === 'Diproses' || newStat === 'Dikirim' || newStat === 'Selesai') && !o.assignedLicense) {
+                        if (newStat === 'Lunas') {
+                          markAsLunasAndSendWa(o);
+                        } else if (hasPkkm && (newStat === 'Diproses' || newStat === 'Dikirim' || newStat === 'Selesai') && !o.assignedLicense) {
                           ensureLicenseForOrder(o, newStat);
                         } else {
                           onChangeStatus(o.orderId, newStat);
@@ -567,27 +597,31 @@ export const OrdersModal: React.FC<Props> = ({
                       }}
                       className="px-2 py-1 rounded-lg border border-stone-200 text-[11px] font-bold bg-white cursor-pointer"
                     >
-                      {STATUSES.map((s) => <option key={s}>{s}</option>)}
+                      {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
 
-                  {/* Tombol Utama: Kirim Link Akses WA Otomatis */}
+                  {/* Tombol Utama: Tandai Lunas & Kirim Notifikasi WA Otomatis */}
                   <a 
                     href={`https://wa.me/${customerPhone}?text=${encodeURIComponent(fulfillmentMsg)}`}
                     target="_blank" 
                     rel="noopener noreferrer"
                     onClick={() => {
-                      if (hasPkkm && !o.assignedLicense) {
-                        ensureLicenseForOrder(o, 'Selesai');
-                      } else if (o.status === 'Menunggu Konfirmasi') {
-                        onChangeStatus(o.orderId, 'Selesai');
-                      }
+                      ensureLicenseForOrder(o, 'Lunas');
                     }}
                     className="cursor-pointer px-3 py-1.5 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white flex items-center gap-1.5 text-[11px] font-bold shadow-xs active:scale-95 transition"
-                    title="Kirim pesan konfirmasi pembayaran + Link akses materi & akun lisensi produk langsung ke WhatsApp pelanggan"
+                    title="Tandai pesanan sebagai Lunas di Firestore & kirim notifikasi WA berisi detail pesanan, link akses, dan akun lisensi PKKM"
                   >
                     <Sparkles className="w-3.5 h-3.5 fill-white text-[#25D366]" />
-                    <span>{hasPkkm ? 'Konfirmasi & Kirim Link + Akun PKKM' : 'Kirim Link Akses WA'}</span>
+                    <span>
+                      {o.status === 'Lunas'
+                        ? hasPkkm
+                          ? 'Kirim Ulang WA Lunas + Akun PKKM'
+                          : 'Kirim Ulang WA Lunas'
+                        : hasPkkm
+                        ? 'Tandai Lunas & Kirim WA + Akun PKKM'
+                        : 'Tandai Lunas & Kirim WA'}
+                    </span>
                     <ExternalLink className="w-3 h-3 opacity-80" />
                   </a>
 
@@ -717,7 +751,7 @@ export const OrdersModal: React.FC<Props> = ({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => {
-                  const updated = ensureLicenseForOrder(previewOrder, 'Selesai');
+                  const updated = ensureLicenseForOrder(previewOrder, 'Lunas');
                   setPreviewOrder(updated);
                 }}
                 className="cursor-pointer px-4 py-2 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs flex items-center gap-1.5 shadow-sm"

@@ -1,0 +1,225 @@
+{
+  "entities": {
+    "Order": {
+      "title": "Order",
+      "description": "Represents a customer digital product order and its PKKM license assignment state.",
+      "type": "object",
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Unique order identifier"
+        },
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "UID of the authenticated user who created the order"
+        },
+        "date": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "Formatted Indonesian date string"
+        },
+        "customerName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Customer full name"
+        },
+        "customerPhone": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 32,
+          "description": "Customer WhatsApp phone number"
+        },
+        "customerEmail": {
+          "type": "string",
+          "maxLength": 160,
+          "description": "Optional customer email for digital delivery"
+        },
+        "paymentMethod": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Selected bank or e-wallet payment method"
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Optional order notes or question text"
+        },
+        "itemsJson": {
+          "type": "array",
+          "description": "Bounded list of ordered item names (up to 15 items)"
+        },
+        "subtotalAmount": {
+          "type": "number",
+          "description": "Order subtotal in IDR"
+        },
+        "discountAmount": {
+          "type": "number",
+          "description": "Discount amount in IDR"
+        },
+        "discountLabel": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Applied bundling discount label"
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "Final total payable in IDR"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Menunggu Konfirmasi",
+            "Lunas",
+            "Diproses",
+            "Dikirim",
+            "Selesai",
+            "Dibatalkan"
+          ],
+          "description": "Order processing and payment confirmation status"
+        },
+        "isQuestionOnly": {
+          "type": "boolean",
+          "description": "Whether this entry is a product inquiry rather than a paid order"
+        },
+        "hasPkkm": {
+          "type": "boolean",
+          "description": "Whether this order contains the PKKM application"
+        },
+        "licenseCode": {
+          "type": "string",
+          "maxLength": 32,
+          "description": "Reserved or confirmed PKKM license code (e.g. PKKM-01)"
+        },
+        "licenseUsername": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "Assigned PKKM license username (populated upon Admin payment confirmation)"
+        },
+        "licensePassword": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "Assigned PKKM license password (populated upon Admin payment confirmation)"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server last update timestamp"
+        }
+      },
+      "required": [
+        "orderId",
+        "ownerId",
+        "date",
+        "customerName",
+        "customerPhone",
+        "paymentMethod",
+        "itemsJson",
+        "totalAmount",
+        "status",
+        "isQuestionOnly",
+        "hasPkkm",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "PkkmLicense": {
+      "title": "PkkmLicense",
+      "description": "Stores each of the 10 PKKM license accounts and tracks 1-buyer-1-license allocation.",
+      "type": "object",
+      "properties": {
+        "licenseCode": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Unique license code (PKKM-01 to PKKM-10)"
+        },
+        "no": {
+          "type": "number",
+          "description": "License sequence number (1 to 10)"
+        },
+        "username": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "PKKM login username"
+        },
+        "password": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "PKKM login password"
+        },
+        "isUsed": {
+          "type": "boolean",
+          "description": "Whether this license is currently assigned to a confirmed order"
+        },
+        "orderId": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "Order ID that claimed this license"
+        },
+        "customerName": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Customer name who received this license"
+        },
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Admin UID managing the license record"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp"
+        }
+      },
+      "required": [
+        "licenseCode",
+        "no",
+        "username",
+        "password",
+        "isUsed",
+        "ownerId",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/orders/{orderId}": {
+      "schema": {
+        "$ref": "#/entities/Order"
+      },
+      "description": "Stores customer orders and PKKM license assignments."
+    },
+    "/pkkmLicenses/{licenseId}": {
+      "schema": {
+        "$ref": "#/entities/PkkmLicense"
+      },
+      "description": "Stores the 10 PKKM license accounts managed by the Admin."
+    }
+  }
+}

@@ -61,7 +61,7 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
     customer: {
       name: 'Ibu Rahmawati',
       phone: '081234567890',
-      paymentMethod: 'BCA 4970394007 (Anis Purwaningsih)',
+      paymentMethod: 'BCA',
       isQuestionOnly: false
     }
   };
@@ -197,20 +197,18 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
                   <div className="col-span-5">
                     <input
                       type="text"
-                      required
                       value={bank.accountNumber}
                       onChange={(e) => handleUpdateBank(index, 'accountNumber', e.target.value)}
-                      placeholder="Nomor Rekening"
+                      placeholder="No. Rek (Opsional / WA Quick Reply)"
                       className="w-full bg-white border border-stone-200 rounded-lg px-2 py-1 text-xs font-mono"
                     />
                   </div>
                   <div className="col-span-3">
                     <input
                       type="text"
-                      required
                       value={bank.accountHolder}
                       onChange={(e) => handleUpdateBank(index, 'accountHolder', e.target.value)}
-                      placeholder="Atas Nama"
+                      placeholder="Atas Nama (Opsional)"
                       className="w-full bg-white border border-stone-200 rounded-lg px-2 py-1 text-xs"
                     />
                   </div>
@@ -239,7 +237,7 @@ export const WhatsAppSimulatorModal: React.FC<WhatsAppSimulatorModalProps> = ({
                 className="accent-[#8FA477] cursor-pointer"
               />
               <label htmlFor="includeBankToggle" className="text-[11px] text-stone-700 cursor-pointer">
-                Sertakan daftar nomor rekening otomatis dalam format pesan WhatsApp pesanan
+                Sertakan nomor rekening di pesan WA (Biarkan mati jika memakai Quick Replies WA Business)
               </label>
             </div>
           </div>

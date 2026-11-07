@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  Plus, 
-  RefreshCw, 
-  ShieldCheck, 
-  LogOut, 
+import {
+  Plus,
+  RefreshCw,
+  ShieldCheck,
+  LogOut,
   ShoppingBag,
   ArrowRight,
   Check,
@@ -11,11 +11,24 @@ import {
   MessageSquare,
   ClipboardList,
   AlertTriangle,
-  Key
+  Key,
+  Cloud
 } from 'lucide-react';
 import { Product, CartItem, ProductCategory, OrderCustomerInfo, CompletedOrder, StoreSettings, OrderStatus } from './types';
 import { hasAdminSession, clearAdminSession } from './lib/adminAuth';
 import { sendOrderToGoogleSheets } from './lib/googleSheets';
+import {
+  auth,
+  onAuthStateChanged,
+  User,
+  isFirebaseAdminUser,
+  signInAdminWithGoogle,
+  signOutFirebaseAdmin,
+  subscribeToFirestoreOrders,
+  saveOrderToFirestore,
+  updateOrderInFirestore,
+  deleteOrderFromFirestore
+} from './lib/firebase';
 import { OrdersModal } from './components/OrdersModal';
 import { INITIAL_PRODUCTS, CATEGORIES, formatRupiah, DEFAULT_STORE_SETTINGS, calculateBundlingDiscount, cleanWaPhone, generateWaOrderText, fixImg, getPkkmLicenseSummary, isPkkmItem } from './data/initialProducts';
 import { Navbar } from './components/Navbar';
@@ -78,6 +91,7 @@ export default function App() {
 
   // Admin Mode state
   const [isAdmin, setIsAdmin] = useState(() => hasAdminSession());
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   const [orders, setOrders] = useState<CompletedOrder[]>(() => {
     try {
@@ -100,7 +114,7 @@ export default function App() {
 
   // Store Settings (WhatsApp number, bank accounts, template)
   const [storeSettings, setStoreSettings] = useState<StoreSettings>(() => {
-    const saved = localStorage.getItem('ashlyn_edu_store_settings_v4');
+    const saved = localStorage.getItem('ashlyn_edu_store_settings_v5');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -114,6 +128,37 @@ export default function App() {
     }
     return DEFAULT_STORE_SETTINGS;
   });
+
+  // Real-time Firebase Auth & Firestore Order Sync
+  useEffect(() => {
+    let unsubOrders: (() => void) | null = null;
+    const unsubAuth = onAuthStateChanged(auth, (user) => {
+      setFirebaseUser(user);
+      if (unsubOrders) {
+        unsubOrders();
+        unsubOrders = null;
+      }
+      if (user) {
+        if (isFirebaseAdminUser(user)) {
+          setIsAdmin(true);
+        }
+        unsubOrders = subscribeToFirestoreOrders(user, (remoteOrders) => {
+          setOrders((prev) => {
+            const byId = new Map<string, CompletedOrder>();
+            prev.forEach((o) => byId.set(o.orderId, o));
+            remoteOrders.forEach((ro) => byId.set(ro.orderId, ro));
+            return Array.from(byId.values()).sort(
+              (a, b) => (b.createdAt || 0) - (a.createdAt || 0)
+            );
+          });
+        });
+      }
+    });
+    return () => {
+      unsubAuth();
+      if (unsubOrders) unsubOrders();
+    };
+  }, []);
 
   const pkkmSummary = useMemo(() => getPkkmLicenseSummary(orders), [orders]);
 
@@ -351,6 +396,11 @@ export default function App() {
     };
 
     setOrders((prev) => [newOrder, ...prev]);
+    if (firebaseUser) {
+      saveOrderToFirestore(newOrder).catch(() => {
+        // Handled by handleFirestoreError
+      });
+    }
     setCompletedOrder(newOrder);
     setIsCheckoutOpen(false);
     setCart([]);
@@ -398,6 +448,32 @@ export default function App() {
             </div>
 
             <div className="flex items-center space-x-1.5 sm:space-x-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    if (firebaseUser) {
+                      await signOutFirebaseAdmin();
+                      showToast('Koneksi Cloud Firebase diputus.');
+                    } else {
+                      const u = await signInAdminWithGoogle();
+                      showToast(`☁️ Cloud Real-Time Aktif (${u.email})`);
+                    }
+                  } catch {
+                    showToast('Login Google dibatalkan.');
+                  }
+                }}
+                className={`cursor-pointer px-2.5 sm:px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 text-[11px] shadow-xs active:scale-95 transition ${
+                  firebaseUser
+                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                    : 'bg-sky-600 hover:bg-sky-700 text-white'
+                }`}
+                title="Sinkronisasi Pesanan & Lisensi PKKM ke Firebase Cloud Real-Time"
+              >
+                <Cloud className="w-3.5 h-3.5" />
+                <span>{firebaseUser ? 'Cloud Aktif' : 'Hubungkan Cloud'}</span>
+              </button>
+
               {/* WhatsApp Feature Button inside Admin Mode */}
               <button
                 type="button"
@@ -718,13 +794,34 @@ export default function App() {
         isOpen={isOrdersOpen}
         onClose={() => setIsOrdersOpen(false)}
         orders={orders}
-        onChangeStatus={(id, status: OrderStatus) =>
-          setOrders((prev) => prev.map((o) => (o.orderId === id ? { ...o, status } : o)))
-        }
-        onUpdateOrder={(updatedOrder) =>
-          setOrders((prev) => prev.map((o) => (o.orderId === updatedOrder.orderId ? updatedOrder : o)))
-        }
-        onDelete={(id) => setOrders((prev) => prev.filter((o) => o.orderId !== id))}
+        onChangeStatus={(id, status: OrderStatus) => {
+          setOrders((prev) =>
+            prev.map((o) => {
+              if (o.orderId === id) {
+                const updated = { ...o, status };
+                if (firebaseUser && isFirebaseAdminUser(firebaseUser)) {
+                  updateOrderInFirestore(updated).catch(() => {});
+                }
+                return updated;
+              }
+              return o;
+            })
+          );
+        }}
+        onUpdateOrder={(updatedOrder) => {
+          setOrders((prev) =>
+            prev.map((o) => (o.orderId === updatedOrder.orderId ? updatedOrder : o))
+          );
+          if (firebaseUser && isFirebaseAdminUser(firebaseUser)) {
+            updateOrderInFirestore(updatedOrder).catch(() => {});
+          }
+        }}
+        onDelete={(id) => {
+          setOrders((prev) => prev.filter((o) => o.orderId !== id));
+          if (firebaseUser && isFirebaseAdminUser(firebaseUser)) {
+            deleteOrderFromFirestore(id).catch(() => {});
+          }
+        }}
         onOpenInvoice={(o) => setInvoiceOrder(o)}
         products={products}
         settings={storeSettings}
@@ -737,7 +834,7 @@ export default function App() {
         settings={storeSettings}
         onSaveSettings={(newSettings) => {
           setStoreSettings(newSettings);
-          localStorage.setItem('ashlyn_edu_store_settings_v4', JSON.stringify(newSettings));
+          localStorage.setItem('ashlyn_edu_store_settings_v5', JSON.stringify(newSettings));
           showToast('🌸 Pengaturan WhatsApp & Bank berhasil disimpan!');
         }}
       />

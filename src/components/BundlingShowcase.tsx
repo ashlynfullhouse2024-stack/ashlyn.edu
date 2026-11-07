@@ -8,7 +8,7 @@ interface BundlingShowcaseProps {
 
 export const BundlingShowcase: React.FC<BundlingShowcaseProps> = ({ onAddBundle }) => {
   const [showCustomBuilder, setShowCustomBuilder] = useState(false);
-  const [selectedCustomIds, setSelectedCustomIds] = useState<number[]>([2, 4, 5]);
+  const [selectedCustomIds, setSelectedCustomIds] = useState<number[]>([11, 2, 6]);
 
   const toggleCustomId = (id: number) => {
     setSelectedCustomIds((prev) =>
@@ -33,7 +33,7 @@ export const BundlingShowcase: React.FC<BundlingShowcaseProps> = ({ onAddBundle 
             <h3 className="font-brand text-base sm:text-lg text-[#D9574F] font-bold leading-tight flex items-center gap-1.5 flex-wrap">
               <span>Paket Bundling Pilihan Guru & Madrasah</span>
               <span className="text-[10px] bg-[#8FA477] text-white px-2 py-0.5 rounded-full font-bold">
-                4 Paket Hemat • Diskon s/d Rp 49rb
+                {RECOMMENDED_BUNDLES.length} Paket Hemat • Diskon s/d Rp 50rb
               </span>
             </h3>
             <p className="text-[11px] text-stone-500">
@@ -151,16 +151,27 @@ export const BundlingShowcase: React.FC<BundlingShowcaseProps> = ({ onAddBundle 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
         {RECOMMENDED_BUNDLES.map((bundle) => {
           const isPkkmBundle = bundle.id === 'bundle-pkkm-edusuite';
+          const isNewFeatured = bundle.id === 'bundle-rplumi-edusuite-lkpd';
           return (
             <div
               key={bundle.id}
-              className="bg-white rounded-2xl p-4 border-2 border-[#E9899F]/30 hover:border-[#D9574F] transition-all flex flex-col justify-between shadow-xs relative group"
+              className={`bg-white rounded-2xl p-4 border-2 transition-all flex flex-col justify-between shadow-xs relative group ${
+                isNewFeatured
+                  ? 'md:col-span-2 border-[#D9574F] ring-2 ring-[#E9899F]/30'
+                  : 'border-[#E9899F]/30 hover:border-[#D9574F]'
+              }`}
             >
               <div>
                 {/* Tag Badge */}
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-[10px] font-bold bg-[#F8EBD8] text-[#D9574F] px-2.5 py-0.5 rounded-lg border border-[#E9899F]/40 flex items-center gap-1">
-                    <Tag className="w-3 h-3 text-[#D9574F]" />
+                  <span
+                    className={`text-[10px] font-bold px-2.5 py-0.5 rounded-lg border flex items-center gap-1 ${
+                      isNewFeatured
+                        ? 'bg-[#D9574F] text-white border-[#D9574F]'
+                        : 'bg-[#F8EBD8] text-[#D9574F] border-[#E9899F]/40'
+                    }`}
+                  >
+                    <Tag className={`w-3 h-3 ${isNewFeatured ? 'text-white' : 'text-[#D9574F]'}`} />
                     <span>{bundle.tag}</span>
                   </span>
                   <span className="text-2xl select-none">{bundle.emoji}</span>

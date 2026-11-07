@@ -220,11 +220,11 @@ export const DEFAULT_STORE_SETTINGS = {
   bankAccounts: [
     { bankName: 'BCA', accountNumber: '4970394007', accountHolder: 'Anis Purwaningsih' },
     { bankName: 'Mandiri', accountNumber: '1330025579962', accountHolder: 'Anis Purwaningsih' },
-    { bankName: 'Dana/E-wallet', accountNumber: '082213283648', accountHolder: 'Anis Purwaningsih' }
+    { bankName: 'Dana/E-Wallet', accountNumber: '082213283648', accountHolder: 'Anis Purwaningsih' }
   ],
   greetingTemplate: 'Halo Admin Ashlyn Edu (ashlyn.edu) 🌸\nSaya ingin memesan perlengkapan kelas & modul berikut:',
   footerTemplate: 'Mohon dibantu konfirmasi pesanan dan proses pengirimannya ya kak. Terima kasih banyak! 🌸',
-  includeBankInWa: true
+  includeBankInWa: false
 };
 
 export const RECOMMENDED_BUNDLES: {
@@ -240,6 +240,23 @@ export const RECOMMENDED_BUNDLES: {
   savingAmount: number;
   emoji: string;
 }[] = [
+  {
+    id: 'bundle-rplumi-edusuite-lkpd',
+    title: 'Paket Bundling Baru: RPP Lumi + EduSuite + LKPD',
+    tag: 'Bundling Baru ✨ Hemat Rp 50rb',
+    description: 'RPP Lumi (Prompt Generator RPP All-In) + EduSuite (Aplikasi Pembuat RPP Guru) + Prompt LKPD Sekali Beli',
+    productIds: [11, 2, 6],
+    itemsIncluded: [
+      'RPP Lumi — Prompt Generator RPP All-In (Semua Jenjang)',
+      'EduSuite AI — Aplikasi Pembuat RPP Guru',
+      'LKPD AI — Prompt LKPD sekali beli untuk selamanya'
+    ],
+    highlightBadge: 'Kombo Lengkap Penyusunan RPP & LKPD Semua Jenjang',
+    normalPrice: 199000,
+    bundlePrice: 149000,
+    savingAmount: 50000,
+    emoji: '🌸'
+  },
   {
     id: 'bundle-pkkm-edusuite',
     title: 'Paket Kepala Sekolah & Guru AI (PKKM + RPP)',
@@ -414,6 +431,18 @@ export function cleanWaPhone(phone: string): string {
   return cleaned || '6287895131563';
 }
 
+export function formatPaymentMethodName(rawMethod: string): string {
+  const trimmed = (rawMethod || '').trim();
+  if (!trimmed) return 'BCA';
+  // Strip any trailing account numbers or account holder in parentheses (e.g. "BCA 4970394007 (Anis Purwaningsih)" -> "BCA")
+  const cleaned = trimmed
+    .replace(/\s+\d[\d\s\-]*(\([^)]*\))?$/g, '')
+    .replace(/\s*\([^)]*\)$/g, '')
+    .trim();
+  if (cleaned.toLowerCase() === 'dana/e-wallet') return 'Dana/E-Wallet';
+  return cleaned || trimmed;
+}
+
 export function generateWaOrderText(
   order: {
     orderId?: string;
@@ -478,25 +507,18 @@ export function generateWaOrderText(
   text += `Rincian Pesanan:\n`;
 
   const hasPkkm = order.items.some((item) => isPkkmItem(item));
-  const pkkmProduct = INITIAL_PRODUCTS.find((p) => p.id === 1);
-  const pkkmLink = pkkmProduct?.accessLink || 'https://generator-pkkm.pages.dev/';
 
   order.items.forEach((item, index) => {
     const qty = item.qty || 1;
     const itemTotal = item.price === 0 ? 'Gratis' : formatRupiah(item.price * qty);
     text += `${index + 1}. ${item.name} (${qty}x) - ${itemTotal}\n`;
-    if (isPkkmItem(item)) {
-      text += `   🔗 Link Aplikasi: ${item.accessLink || pkkmLink}\n`;
-    }
   });
 
-  if (hasPkkm && order.assignedLicense) {
+  if (hasPkkm) {
     text += `━━━━━━━━━━━━━━━━━━━━━\n`;
-    text += `🔐 *AKUN LISENSI APLIKASI PKKM (1 Pembeli 1 Akun):*\n`;
-    text += `• Link Akses: ${pkkmLink}\n`;
-    text += `• Username Lisensi: *${order.assignedLicense.username}*\n`;
-    text += `• Password Lisensi: *${order.assignedLicense.password}*\n`;
-    text += `• Kode Lisensi: ${order.assignedLicense.licenseCode}\n`;
+    text += `🔐 *RESERVASI LISENSI APLIKASI PKKM:*\n`;
+    text += `• Kode Booking: *${order.assignedLicense?.licenseCode || 'PKKM-RESERVED'}*\n`;
+    text += `• Info Akses: Link aplikasi, Username, & Password dikirimkan oleh Admin setelah pembayaran terkonfirmasi lunas.\n`;
   }
 
   text += `━━━━━━━━━━━━━━━━━━━━━\n`;
@@ -508,25 +530,13 @@ export function generateWaOrderText(
   } else {
     text += `TOTAL BAYAR: ${formatRupiah(order.totalAmount)}\n`;
   }
-  text += `Metode Bayar: ${order.customer.paymentMethod}\n`;
-  if (settings.includeBankInWa && settings.bankAccounts && settings.bankAccounts.length > 0) {
-    text += `━━━━━━━━━━━━━━━━━━━━━\n`;
-    text += `Rekening Pembayaran:\n`;
-    settings.bankAccounts.forEach((b) => {
-      if (b.bankName && b.accountNumber) {
-        text += `• ${b.bankName}: ${b.accountNumber} (a.n ${b.accountHolder})\n`;
-      }
-    });
-  }
+  const chosenMethod = formatPaymentMethodName(order.customer.paymentMethod);
+  text += `Metode Bayar: ${chosenMethod}\n`;
   if (order.customer.notes) {
     text += `Catatan: ${order.customer.notes}\n`;
   }
   text += `━━━━━━━━━━━━━━━━━━━━━\n`;
-  if (settings.greetingTemplate && settings.footerTemplate) {
-    text += `${settings.footerTemplate}\n`;
-  } else {
-    text += `Halo Admin ${settings.storeName}! Saya mau konfirmasi pembayaran untuk pesanan di atas ya. Terima kasih! 🌸✨`;
-  }
+  text += `Mohon dibantu konfirmasi pesanan dan proses pengirimannya ya kak. Terima kasih banyak! 🌸`;
 
   return text;
 }
@@ -606,7 +616,7 @@ export function generateAccessFulfillmentMessage(
   order: CompletedOrder,
   products: Product[] = INITIAL_PRODUCTS,
   settings: StoreSettings = DEFAULT_STORE_SETTINGS,
-  fallbackLicense?: { username: string; password: string; licenseCode?: string } | null
+  fallbackLicense?: { username: string; password: string; licenseCode?: string; no?: number } | null
 ): string {
   const storeName = settings.storeName || 'Ashlyn Edu';
   const productMap = new Map<string, string>();
@@ -625,13 +635,25 @@ export function generateAccessFulfillmentMessage(
 
   const hasPkkm = orderHasPkkmProduct(order);
   const licenseToUse = order.assignedLicense || (hasPkkm ? fallbackLicense : null);
+  const chosenMethod = formatPaymentMethodName(order.customer.paymentMethod);
 
-  let text = `🌸 *KONFIRMASI PEMBAYARAN & AKSES PRODUK - ${storeName.toUpperCase()}* 🌸\n`;
+  let text = `🌸 *KONFIRMASI PEMBAYARAN LUNAS - ${storeName.toUpperCase()}* 🌸\n`;
   text += `━━━━━━━━━━━━━━━━━━━━━\n`;
   text += `Halo Kak *${order.customer.name}*! 👋✨\n`;
-  text += `Terima kasih banyak, pembayaran untuk pesanan *#${order.orderId}* sebesar *${formatRupiah(order.totalAmount)}* telah kami terima (LUNAS ✅).\n\n`;
-  text += `Berikut adalah tautan akses resmi untuk produk yang Kakak pesan:\n`;
+  text += `Terima kasih banyak, pembayaran Kakak telah kami verifikasi dengan rincian berikut:\n\n`;
+  text += `📋 *DETAIL PESANAN:*\n`;
+  text += `• ID Pesanan: *#${order.orderId}*\n`;
+  text += `• Tanggal: ${order.date}\n`;
+  text += `• Metode Bayar: ${chosenMethod}\n`;
+  if (order.discountAmount && order.discountAmount > 0) {
+    const sub = order.subtotalAmount || order.totalAmount + order.discountAmount;
+    text += `• Subtotal: ${formatRupiah(sub)}\n`;
+    text += `• ${order.discountLabel || 'Diskon Bundling'}: -${formatRupiah(order.discountAmount)}\n`;
+  }
+  text += `• Total Pembayaran: *${formatRupiah(order.totalAmount)}*\n`;
+  text += `• Status Pembayaran: *LUNAS ✅*\n`;
   text += `━━━━━━━━━━━━━━━━━━━━━\n`;
+  text += `📦 *DAFTAR PRODUK & LINK AKSES RESMI:*\n`;
 
   order.items.forEach((item, index) => {
     const link =
@@ -645,17 +667,29 @@ export function generateAccessFulfillmentMessage(
     } else {
       text += `   📩 File/akses dikirim langsung melalui chat ini ya Kak.\n`;
     }
-    if (isPkkmItem(item) && licenseToUse) {
-      text += `   🔐 *Akun Login Lisensi PKKM (Khusus 1 Pembeli):*\n`;
-      text += `      • Username Lisensi: *${licenseToUse.username}*\n`;
-      text += `      • Password Lisensi: *${licenseToUse.password}*\n`;
-    } else if (isPkkmItem(item) && !licenseToUse) {
-      text += `   ⚠️ *Catatan Admin: Stok Akun Lisensi PKKM sedang habis (perlu penambahan stok).* \n`;
-    }
     if (item.accessNote) {
       text += `   📌 Catatan: ${item.accessNote}\n`;
     }
   });
+
+  if (hasPkkm) {
+    text += `━━━━━━━━━━━━━━━━━━━━━\n`;
+    text += `🔐 *AKUN LISENSI APLIKASI PKKM (1 PEMBELI = 1 AKUN):*\n`;
+    if (licenseToUse) {
+      const code =
+        licenseToUse.licenseCode ||
+        (typeof (licenseToUse as { no?: number }).no === 'number'
+          ? `PKKM-${String((licenseToUse as { no?: number }).no).padStart(2, '0')}`
+          : 'PKKM-RESMI');
+      text += `• Kode Lisensi: *${code}*\n`;
+      text += `• Link Aplikasi: https://generator-pkkm.pages.dev/\n`;
+      text += `• Username Lisensi: *${licenseToUse.username}*\n`;
+      text += `• Password Lisensi: *${licenseToUse.password}*\n`;
+      text += `*(Penting: Akun lisensi ini bersifat eksklusif untuk 1 pembeli. Mohon simpan Username & Password di atas dengan aman)*\n`;
+    } else {
+      text += `⚠️ *Catatan Admin: Stok Akun Lisensi PKKM sedang habis (perlu penambahan stok).* \n`;
+    }
+  }
 
   text += `━━━━━━━━━━━━━━━━━━━━━\n`;
   text += `💡 *Tips:* Silakan simpan pesan ini atau bookmark tautan di atas agar mudah diakses kapan saja.\n\n`;
@@ -675,14 +709,7 @@ export function generatePendingReminderMessage(
     text += `${idx + 1}. ${item.name} (${item.qty || 1}x)\n`;
   });
   text += `\nTotal Tagihan: *${formatRupiah(order.totalAmount)}*\n`;
-  text += `Metode Pembayaran: ${order.customer.paymentMethod}\n`;
-
-  if (settings.includeBankInWa && settings.bankAccounts && settings.bankAccounts.length > 0) {
-    text += `\n💳 *Rekening Pembayaran Resmi:*\n`;
-    settings.bankAccounts.forEach((b) => {
-      text += `• ${b.bankName}: ${b.accountNumber} (a.n ${b.accountHolder})\n`;
-    });
-  }
+  text += `Metode Pembayaran: ${formatPaymentMethodName(order.customer.paymentMethod)}\n`;
 
   text += `\nApabila Kakak sudah melakukan pembayaran, mohon kirimkan bukti transfernya di chat ini agar link akses produk bisa langsung kami kirimkan ya Kak. Terima kasih banyak! 🌷✨`;
   return text;

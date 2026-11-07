@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
 import { 
   CheckCircle2, 
@@ -106,42 +106,30 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
           <ExternalLink className="w-3.5 h-3.5" />
         </a>
 
-        {/* PKKM Assigned License Card (if PKKM ordered) */}
+        {/* PKKM Reserved License Notice (Credentials hidden until Admin confirms payment) */}
         {order.assignedLicense && !order.isQuestionOnly && (
-          <div className="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-3.5 space-y-2 text-xs">
+          <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3.5 space-y-2 text-xs">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-emerald-900 flex items-center gap-1.5">
+              <span className="font-bold text-amber-900 flex items-center gap-1.5">
                 <span>🔐</span>
-                <span>Akun Lisensi Aplikasi PKKM Anda</span>
+                <span>Kuota Lisensi PKKM Diamankan</span>
               </span>
-              <span className="text-[10px] font-bold bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded-full">
-                {order.assignedLicense.licenseCode}
+              <span className="text-[10px] font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">
+                Kode Booking: {order.assignedLicense.licenseCode}
               </span>
             </div>
-            <div className="bg-white rounded-xl p-2.5 border border-emerald-200 space-y-1 font-mono text-[11px] text-stone-800">
+            <div className="bg-white rounded-xl p-2.5 border border-amber-200 space-y-1 text-[11px] text-stone-700">
               <div className="flex justify-between">
-                <span className="text-stone-500 font-sans">Username Lisensi:</span>
-                <strong className="text-emerald-800 select-all">{order.assignedLicense.username}</strong>
+                <span className="text-stone-500">Status Lisensi:</span>
+                <strong className="text-amber-800">Menunggu Konfirmasi Transfer</strong>
               </div>
               <div className="flex justify-between">
-                <span className="text-stone-500 font-sans">Password Lisensi:</span>
-                <strong className="text-emerald-800 select-all">{order.assignedLicense.password}</strong>
-              </div>
-              <div className="flex justify-between items-center pt-1 border-t border-stone-100">
-                <span className="text-stone-500 font-sans">Link Aplikasi:</span>
-                <a
-                  href="https://generator-pkkm.pages.dev/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-emerald-700 font-bold underline flex items-center gap-1 font-sans"
-                >
-                  <span>generator-pkkm.pages.dev</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
+                <span className="text-stone-500">Username & Password:</span>
+                <span className="font-mono font-bold text-stone-500">🔒 Dikirim Setelah Lunas</span>
               </div>
             </div>
-            <p className="text-[10px] text-emerald-800 leading-relaxed">
-              ✓ Username, password, dan link aplikasi PKKM di atas sudah otomatis tercantum di dalam format pesan WhatsApp konfirmasi pesanan Anda.
+            <p className="text-[10px] text-amber-900 leading-relaxed">
+              ✓ 1 Akun Lisensi eksklusif telah dikunci untuk pesanan Anda. Admin akan mengirimkan <strong>Link Aplikasi, Username, dan Password</strong> langsung ke WhatsApp Anda segera setelah pembayaran terverifikasi.
             </p>
           </div>
         )}
